@@ -22,16 +22,15 @@ class ReplayTransferService {
             if (check.contains("No such file") || check.contains("cannot access")) {
                 return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
             }
-            val files = check.trim().split("
-").filter { it.isNotBlank() }
-            logCallback("[INFO] " + files.size.toString() + " arquivo(s)")
-            if (files.isEmpty()) {
+            val lines = check.trim().lines().filter { it.isNotBlank() }
+            logCallback("[INFO] " + lines.size.toString() + " arquivo(s)")
+            if (lines.isEmpty()) {
                 return TransferResult(false, 0, "Nenhum replay encontrado")
             }
             exec("mkdir -p " + dst)
             var copied = 0
-            for (i in files.indices) {
-                val name = files[i]
+            for (i in lines.indices) {
+                val name = lines[i]
                 if (name.isBlank()) continue
                 logCallback("[COPY] " + name)
                 val r = exec("cp -rf " + src + "/" + name + " " + dst + "/" + name)
@@ -42,7 +41,7 @@ class ReplayTransferService {
                     logCallback("[WARN] " + r)
                 }
             }
-            logCallback("[DONE] " + copied.toString() + "/" + files.size.toString())
+            logCallback("[DONE] " + copied.toString() + "/" + lines.size.toString())
             TransferResult(true, copied)
         } catch (ex: Exception) {
             logCallback("[ERRO] " + ex.message.orEmpty())
