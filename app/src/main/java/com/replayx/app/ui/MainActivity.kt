@@ -110,7 +110,8 @@ class MainActivity : AppCompatActivity() {
         val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
         val current = binding.tvLog.text.toString()
         val newText = if (current.isEmpty()) "[$time] $message"
-                      else "$current\n[$time] $message"
+                      else "$current
+[$time] $message"
         binding.tvLog.text = newText
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
