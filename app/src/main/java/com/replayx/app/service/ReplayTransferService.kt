@@ -1,7 +1,5 @@
 package com.replayx.app.service
 
-import rikka.shizuku.Shizuku
-
 data class TransferResult(
     val success: Boolean,
     val filesCopied: Int = 0,
@@ -22,14 +20,15 @@ class ReplayTransferService {
             logCallback("[SCAN] Verificando origem...")
             logCallback("[PATH] $sourcePath")
 
-            val checkResult = runCmd("ls \"$sourcePath\" 2>&1")
+            val checkResult = execCmd("ls "$sourcePath" 2>&1")
             logCallback("[LS  ] ${checkResult.trim().take(80)}")
 
             if (checkResult.contains("No such file") || checkResult.contains("cannot access")) {
                 return TransferResult(false, 0, "Pasta MReplays nao encontrada em $sourcePackage")
             }
 
-            val files = checkResult.trim().split("\n").filter { it.isNotBlank() }
+            val files = checkResult.trim().split("
+").filter { it.isNotBlank() }
             logCallback("[INFO] ${files.size} item(ns) encontrado(s)")
 
             if (files.isEmpty()) {
@@ -37,13 +36,13 @@ class ReplayTransferService {
             }
 
             logCallback("[MKDIR] Criando pasta destino...")
-            runCmd("mkdir -p \"$destPath\"")
+            execCmd("mkdir -p "$destPath"")
 
             var copied = 0
             files.forEachIndexed { i, name ->
                 if (name.isBlank()) return@forEachIndexed
                 logCallback("[COPY] [${i + 1}/${files.size}] $name")
-                val r = runCmd("cp -rf \"$sourcePath/$name\" \"$destPath/$name\" 2>&1")
+                val r = execCmd("cp -rf "$sourcePath/$name" "$destPath/$name" 2>&1")
                 if (r.isBlank() || !r.lowercase().contains("error")) {
                     copied++
                     logCallback("[OK  ] $name")
@@ -61,9 +60,11 @@ class ReplayTransferService {
         }
     }
 
-    private fun runCmd(command: String): String {
+    private fun execCmd(command: String): String {
         return try {
-            val process = Shizuku.newProcess(arrayOf("sh", "-c", command), null, null)
+            val cls = Class.forName("rikka.shizuku.Shizuku")
+            val method = cls.getMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
+            val process = method.invoke(null, arrayOf("sh", "-c", command), null, null) as Process
             val stdout = process.inputStream.bufferedReader().readText()
             val stderr = process.errorStream.bufferedReader().readText()
             process.waitFor()
