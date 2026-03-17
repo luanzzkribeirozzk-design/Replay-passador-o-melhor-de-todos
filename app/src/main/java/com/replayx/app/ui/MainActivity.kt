@@ -1,7 +1,7 @@
 package com.replayx.app.ui
 
 import android.content.pm.PackageManager
-import android.os.*
+import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -13,18 +13,21 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityMainBinding
     private val transferService = ReplayTransferService()
     private val SHIZUKU_CODE = 1001
 
-    private val shizukuBinderReceiver = object : Shizuku.OnBinderReceivedListener {
-        override fun onBinderReceived() { updateShizukuStatus(true) }
+    private val shizukuBinderReceiver = Shizuku.OnBinderReceivedListener {
+        updateShizukuStatus(true)
     }
-    private val shizukuDeadReceiver = object : Shizuku.OnBinderDeadListener {
-        override fun onBinderDead() { updateShizukuStatus(false) }
+
+    private val shizukuDeadReceiver = Shizuku.OnBinderDeadListener {
+        updateShizukuStatus(false)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +47,9 @@ class MainActivity : AppCompatActivity() {
             if (!checkShizukuReady()) return@setOnClickListener
             startTransfer("com.dts.freefireth", "com.dts.freefiremax", "FFN -> FFM")
         }
-        binding.btnClearLog.setOnClickListener { clearLog() }
+        binding.btnClearLog.setOnClickListener {
+            clearLog()
+        }
     }
 
     private fun setupShizuku() {
@@ -53,37 +58,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkShizukuReady(): Boolean {
-        if (!Shizuku.pingBinder()) { appendLog("[ERRO] Shizuku nao esta ativo!"); return false }
-        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            Shizuku.requestPermission(SHIZUKU_CODE)
-            appendLog("[AGUARDANDO] Conceda permissao ao Shizuku...")
-            return false
+        return try {
+            if (!Shizuku.pingBinder()) {
+                appendLog("[ERRO] Shizuku nao esta ativo!")
+                return false
+            }
+            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                Shizuku.requestPermission(SHIZUKU_CODE)
+                appendLog("[AGUARDANDO] Conceda permissao ao Shizuku...")
+                return false
+            }
+            true
+        } catch (e: Exception) {
+            appendLog("[ERRO] Shizuku: ${e.message}")
+            false
         }
-        return true
     }
 
     private fun startTransfer(from: String, to: String, label: String) {
         binding.btnBypassMaxToNormal.isEnabled = false
         binding.btnBypassNormalToMax.isEnabled = false
+
         lifecycleScope.launch {
-            appendLog("=".repeat(27))
+            appendLog("===========================")
             appendLog("[INICIANDO] Bypass $label")
-            appendLog("[INFO] Origem: $from")
-            appendLog("[INFO] Destino: $to")
-            appendLog("=".repeat(27))
-            delay(300)
+            appendLog("[FROM] $from")
+            appendLog("[TO  ] $to")
+            appendLog("===========================")
+            delay(200)
+
             val result = withContext(Dispatchers.IO) {
-                transferService.transferReplays(from, to) { msg -> lifecycleScope.launch { appendLog(msg) } }
+                transferService.transferReplays(from, to) { msg ->
+                    lifecycleScope.launch(Dispatchers.Main) { appendLog(msg) }
+                }
             }
+
+            appendLog("===========================")
             if (result.success) {
-                appendLog("=".repeat(27))
-                appendLog("[OK] BYPASS CONCLUIDO! ${result.filesCopied} replay(s)")
-                appendLog("=".repeat(27))
+                appendLog("[OK] CONCLUIDO! ${result.filesCopied} replay(s)")
             } else {
-                appendLog("=".repeat(27))
                 appendLog("[ERRO] ${result.errorMessage}")
-                appendLog("=".repeat(27))
             }
+            appendLog("===========================")
+
             binding.btnBypassMaxToNormal.isEnabled = true
             binding.btnBypassNormalToMax.isEnabled = true
         }
@@ -92,11 +109,16 @@ class MainActivity : AppCompatActivity() {
     private fun appendLog(message: String) {
         val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
         val current = binding.tvLog.text.toString()
-        binding.tvLog.text = if (current.isEmpty()) "[$time] $message" else "$current\n[$time] $message"
+        val newText = if (current.isEmpty()) "[$time] $message"
+                      else "$current\n[$time] $message"
+        binding.tvLog.text = newText
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
 
-    private fun clearLog() { binding.tvLog.text = ""; appendLog("[SISTEMA] Log limpo.") }
+    private fun clearLog() {
+        binding.tvLog.text = ""
+        appendLog("[SISTEMA] Log limpo.")
+    }
 
     private fun updateShizukuStatus(active: Boolean) {
         runOnUiThread {
