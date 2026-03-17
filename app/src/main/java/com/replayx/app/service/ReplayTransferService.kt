@@ -1,5 +1,7 @@
 package com.replayx.app.service
 
+import rikka.shizuku.Shizuku
+
 data class TransferResult(
     val success: Boolean,
     val filesCopied: Int = 0,
@@ -20,8 +22,8 @@ class ReplayTransferService {
             logCallback("[SCAN] Verificando origem...")
             logCallback("[PATH] " + src)
 
-            val check = shell("ls " + src)
-            logCallback("[LS  ] " + check.take(80))
+            val check = runShell("ls " + src)
+            logCallback("[LS] " + check.take(80))
 
             if (check.contains("No such file") || check.contains("cannot access")) {
                 return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
@@ -29,52 +31,47 @@ class ReplayTransferService {
 
             val files = check.trim().split("
 ").filter { it.isNotBlank() }
-            logCallback("[INFO] " + files.size + " arquivo(s)")
+            logCallback("[INFO] " + files.size.toString() + " arquivo(s)")
 
             if (files.isEmpty()) {
                 return TransferResult(false, 0, "Nenhum replay encontrado")
             }
 
-            shell("mkdir -p " + dst)
-            logCallback("[MKDIR] Destino criado")
+            runShell("mkdir -p " + dst)
+            logCallback("[MKDIR] OK")
 
             var copied = 0
             for (i in files.indices) {
                 val name = files[i]
                 if (name.isBlank()) continue
-                logCallback("[COPY] [" + (i + 1) + "/" + files.size + "] " + name)
-                val r = shell("cp -rf " + src + "/" + name + " " + dst + "/" + name)
+                logCallback("[COPY] " + (i + 1).toString() + "/" + files.size.toString() + " " + name)
+                val r = runShell("cp -rf " + src + "/" + name + " " + dst + "/" + name)
                 if (!r.lowercase().contains("error")) {
                     copied++
                     logCallback("[OK] " + name)
                 } else {
-                    logCallback("[WARN] " + name + " -> " + r)
+                    logCallback("[WARN] " + name + " " + r)
                 }
             }
 
-            logCallback("[DONE] " + copied + "/" + files.size + " copiado(s)")
+            logCallback("[DONE] " + copied.toString() + "/" + files.size.toString())
             TransferResult(true, copied)
 
         } catch (ex: Exception) {
-            logCallback("[ERRO] " + ex.message)
-            TransferResult(false, 0, ex.message ?: "Erro")
+            logCallback("[ERRO] " + ex.message.orEmpty())
+            TransferResult(false, 0, ex.message.orEmpty())
         }
     }
 
-    private fun shell(cmd: String): String {
+    private fun runShell(cmd: String): String {
         return try {
-            val c = Class.forName("rikka.shizuku.Shizuku")
-            val m = c.getMethod("newProcess",
-                Class.forName("[Ljava.lang.String;"),
-                Class.forName("[Ljava.lang.String;"),
-                String::class.java)
-            val p = m.invoke(null, arrayOf("sh", "-c", cmd), null, null) as Process
-            val o = p.inputStream.bufferedReader().readText()
-            val e = p.errorStream.bufferedReader().readText()
-            p.waitFor()
-            if (o.isNotBlank()) o else e
+            val process: Process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+            val out = process.inputStream.bufferedReader().readText()
+            val err = process.errorStream.bufferedReader().readText()
+            process.waitFor()
+            if (out.isNotBlank()) out else err
         } catch (ex: Exception) {
-            "ERR:" + ex.message
+            "ERR " + ex.message.orEmpty()
         }
     }
 }
