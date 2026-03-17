@@ -24,7 +24,7 @@ class ReplayTransferService {
             if (check.contains("Permission denied")) {
                 return TransferResult(false, 0, "Permissao negada - verifique Shizuku")
             }
-            if (check.contains("No such file") || check.contains("cannot access")) {
+            if (check.contains("No such file")) {
                 return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
             }
             val files = check.trim().lines().filter { it.isNotBlank() }
@@ -38,7 +38,10 @@ class ReplayTransferService {
                 val name = files[i].trim()
                 if (name.isBlank()) continue
                 logCallback("[COPY] " + name)
-                val r = sh("cp -rf "" + src + "/" + name + "" "" + dst + "/" + name + """)
+                val srcFile = src + "/" + name
+                val dstFile = dst + "/" + name
+                val cmd = "cp -rf " + srcFile + " " + dstFile
+                val r = sh(cmd)
                 if (!r.lowercase().contains("error") && !r.lowercase().contains("permission")) {
                     copied++
                     logCallback("[OK] " + name)
@@ -56,7 +59,8 @@ class ReplayTransferService {
 
     private fun sh(cmd: String): String {
         return try {
-            val process: Process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+            val args = arrayOf("sh", "-c", cmd)
+            val process: Process = Shizuku.newProcess(args, null, null)
             val out = process.inputStream.bufferedReader().readText()
             val err = process.errorStream.bufferedReader().readText()
             process.waitFor()
