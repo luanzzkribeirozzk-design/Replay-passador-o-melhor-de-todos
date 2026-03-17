@@ -1,6 +1,6 @@
 package com.replayx.app.service
 
-import rikka.shizuku.Shizuku
+import com.replayx.app.util.ShizukuHelper
 
 data class TransferResult(
     val success: Boolean,
@@ -38,9 +38,7 @@ class ReplayTransferService {
                 val name = files[i].trim()
                 if (name.isBlank()) continue
                 logCallback("[COPY] " + name)
-                val srcFile = src + "/" + name
-                val dstFile = dst + "/" + name
-                val cmd = "cp -rf " + srcFile + " " + dstFile
+                val cmd = "cp -rf " + src + "/" + name + " " + dst + "/" + name
                 val r = sh(cmd)
                 if (!r.lowercase().contains("error") && !r.lowercase().contains("permission")) {
                     copied++
@@ -59,11 +57,10 @@ class ReplayTransferService {
 
     private fun sh(cmd: String): String {
         return try {
-            val args = arrayOf("sh", "-c", cmd)
-            val process: Process = Shizuku.newProcess(args, null, null)
-            val out = process.inputStream.bufferedReader().readText()
-            val err = process.errorStream.bufferedReader().readText()
-            process.waitFor()
+            val p = ShizukuHelper.exec(cmd)
+            val out = p.inputStream.bufferedReader().readText()
+            val err = p.errorStream.bufferedReader().readText()
+            p.waitFor()
             if (out.isNotBlank()) out else err
         } catch (ex: Exception) {
             "ERR " + ex.message.orEmpty()
