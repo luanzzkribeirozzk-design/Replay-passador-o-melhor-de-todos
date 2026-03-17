@@ -1,5 +1,7 @@
 package com.replayx.app.service
 
+import rikka.shizuku.Shizuku
+
 data class TransferResult(
     val success: Boolean,
     val filesCopied: Int = 0,
@@ -17,31 +19,34 @@ class ReplayTransferService {
             val src = "/sdcard/Android/data/" + sourcePackage + "/files/MReplays"
             val dst = "/sdcard/Android/data/" + destPackage + "/files/MReplays"
             logCallback("[SCAN] " + src)
-            val check = exec("ls " + src)
-            logCallback("[LS] " + check.take(80))
+            val check = sh("ls " + src)
+            logCallback("[LS] " + check.take(120))
+            if (check.contains("Permission denied")) {
+                return TransferResult(false, 0, "Permissao negada - verifique Shizuku")
+            }
             if (check.contains("No such file") || check.contains("cannot access")) {
                 return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
             }
-            val lines = check.trim().lines().filter { it.isNotBlank() }
-            logCallback("[INFO] " + lines.size.toString() + " arquivo(s)")
-            if (lines.isEmpty()) {
+            val files = check.trim().lines().filter { it.isNotBlank() }
+            logCallback("[INFO] " + files.size.toString() + " arquivo(s)")
+            if (files.isEmpty()) {
                 return TransferResult(false, 0, "Nenhum replay encontrado")
             }
-            exec("mkdir -p " + dst)
+            sh("mkdir -p " + dst)
             var copied = 0
-            for (i in lines.indices) {
-                val name = lines[i]
+            for (i in files.indices) {
+                val name = files[i].trim()
                 if (name.isBlank()) continue
                 logCallback("[COPY] " + name)
-                val r = exec("cp -rf " + src + "/" + name + " " + dst + "/" + name)
-                if (!r.lowercase().contains("error")) {
+                val r = sh("cp -rf "" + src + "/" + name + "" "" + dst + "/" + name + """)
+                if (!r.lowercase().contains("error") && !r.lowercase().contains("permission")) {
                     copied++
                     logCallback("[OK] " + name)
                 } else {
-                    logCallback("[WARN] " + r)
+                    logCallback("[WARN] " + r.take(60))
                 }
             }
-            logCallback("[DONE] " + copied.toString() + "/" + lines.size.toString())
+            logCallback("[DONE] " + copied.toString() + "/" + files.size.toString())
             TransferResult(true, copied)
         } catch (ex: Exception) {
             logCallback("[ERRO] " + ex.message.orEmpty())
@@ -49,12 +54,12 @@ class ReplayTransferService {
         }
     }
 
-    private fun exec(cmd: String): String {
+    private fun sh(cmd: String): String {
         return try {
-            val p = Runtime.getRuntime().exec(arrayOf("sh", "-c", cmd))
-            val out = p.inputStream.bufferedReader().readText()
-            val err = p.errorStream.bufferedReader().readText()
-            p.waitFor()
+            val process: Process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+            val out = process.inputStream.bufferedReader().readText()
+            val err = process.errorStream.bufferedReader().readText()
+            process.waitFor()
             if (out.isNotBlank()) out else err
         } catch (ex: Exception) {
             "ERR " + ex.message.orEmpty()
