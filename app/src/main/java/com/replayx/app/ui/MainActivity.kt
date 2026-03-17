@@ -88,8 +88,8 @@ class MainActivity : AppCompatActivity() {
     private fun log(msg: String) {
         val t = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
         val cur = binding.tvLog.text.toString()
-        val next = if (cur.isEmpty()) "[" + t + "] " + msg else cur + "
-[" + t + "] " + msg
+        val sep = System.lineSeparator()
+        val next = if (cur.isEmpty()) "[" + t + "] " + msg else cur + sep + "[" + t + "] " + msg
         binding.tvLog.text = next
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
