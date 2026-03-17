@@ -14,71 +14,67 @@ class ReplayTransferService {
         logCallback: (String) -> Unit
     ): TransferResult {
         return try {
-            val sourcePath = "/sdcard/Android/data/$sourcePackage/files/MReplays"
-            val destPath = "/sdcard/Android/data/$destPackage/files/MReplays"
+            val src = "/sdcard/Android/data/" + sourcePackage + "/files/MReplays"
+            val dst = "/sdcard/Android/data/" + destPackage + "/files/MReplays"
 
             logCallback("[SCAN] Verificando origem...")
-            logCallback("[PATH] $sourcePath")
+            logCallback("[PATH] " + src)
 
-            val checkResult = runCmd("ls $sourcePath 2>&1")
-            logCallback("[LS  ] " + checkResult.trim().take(80))
+            val check = shell("ls " + src)
+            logCallback("[LS  ] " + check.take(80))
 
-            if (checkResult.contains("No such file") || checkResult.contains("cannot access")) {
-                return TransferResult(false, 0, "Pasta MReplays nao encontrada em $sourcePackage")
+            if (check.contains("No such file") || check.contains("cannot access")) {
+                return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
             }
 
-            val files = checkResult.trim().split("
-").filter { line -> line.isNotBlank() }
-            logCallback("[INFO] " + files.size + " arquivo(s) encontrado(s)")
+            val files = check.trim().split("
+").filter { it.isNotBlank() }
+            logCallback("[INFO] " + files.size + " arquivo(s)")
 
             if (files.isEmpty()) {
                 return TransferResult(false, 0, "Nenhum replay encontrado")
             }
 
-            logCallback("[MKDIR] Criando pasta destino...")
-            runCmd("mkdir -p $destPath")
+            shell("mkdir -p " + dst)
+            logCallback("[MKDIR] Destino criado")
 
             var copied = 0
-            var index = 0
-            for (name in files) {
+            for (i in files.indices) {
+                val name = files[i]
                 if (name.isBlank()) continue
-                index++
-                logCallback("[COPY] [$index/${files.size}] $name")
-                val result = runCmd("cp -rf $sourcePath/$name $destPath/$name 2>&1")
-                if (result.isBlank() || !result.lowercase().contains("error")) {
+                logCallback("[COPY] [" + (i + 1) + "/" + files.size + "] " + name)
+                val r = shell("cp -rf " + src + "/" + name + " " + dst + "/" + name)
+                if (!r.lowercase().contains("error")) {
                     copied++
-                    logCallback("[OK  ] $name")
+                    logCallback("[OK] " + name)
                 } else {
-                    logCallback("[WARN] $name -> $result")
+                    logCallback("[WARN] " + name + " -> " + r)
                 }
             }
 
-            logCallback("[DONE] $copied/${files.size} copiado(s)")
+            logCallback("[DONE] " + copied + "/" + files.size + " copiado(s)")
             TransferResult(true, copied)
 
-        } catch (e: Exception) {
-            logCallback("[EXCEPTION] " + e.message)
-            TransferResult(false, 0, e.message ?: "Erro desconhecido")
+        } catch (ex: Exception) {
+            logCallback("[ERRO] " + ex.message)
+            TransferResult(false, 0, ex.message ?: "Erro")
         }
     }
 
-    private fun runCmd(command: String): String {
+    private fun shell(cmd: String): String {
         return try {
-            val shizukuClass = Class.forName("rikka.shizuku.Shizuku")
-            val newProcess = shizukuClass.getMethod(
-                "newProcess",
-                Array<String>::class.java,
-                Array<String>::class.java,
-                String::class.java
-            )
-            val args = arrayOf("sh", "-c", command)
-            val process = newProcess.invoke(null, args, null, null) as Process
-            val out = process.inputStream.bufferedReader().readText()
-            val err = process.errorStream.bufferedReader().readText()
-            process.waitFor()
-            if (out.isNotBlank()) out else err
-        } catch (e: Exception) {
-            "ERRO: " + e.message
+            val c = Class.forName("rikka.shizuku.Shizuku")
+            val m = c.getMethod("newProcess",
+                Class.forName("[Ljava.lang.String;"),
+                Class.forName("[Ljava.lang.String;"),
+                String::class.java)
+            val p = m.invoke(null, arrayOf("sh", "-c", cmd), null, null) as Process
+            val o = p.inputStream.bufferedReader().readText()
+            val e = p.errorStream.bufferedReader().readText()
+            p.waitFor()
+            if (o.isNotBlank()) o else e
+        } catch (ex: Exception) {
+            "ERR:" + ex.message
         }
     }
 }
