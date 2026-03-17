@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0A0A0F"
+    android:orientation="vertical">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="#12121A" android:orientation="vertical"
+        android:paddingTop="40dp" android:paddingBottom="20dp" android:paddingHorizontal="24dp">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="PASSADOR DE" android:textColor="#6A0DAD" android:textSize="13sp"
+            android:letterSpacing="0.3" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="REPLAY X" android:textColor="#BF00FF" android:textSize="32sp"
+            android:textStyle="bold" android:letterSpacing="0.15"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="FREE FIRE REPLAY BYPASS SYSTEM" android:textColor="#7B2FBE"
+            android:textSize="10sp" android:letterSpacing="0.2" android:layout_marginTop="2dp"/>
+        <TextView android:id="@+id/tvShizukuStatus" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="● SHIZUKU VERIFICANDO..."
+            android:textColor="#FFD700" android:textSize="11sp" android:textStyle="bold"
+            android:layout_marginTop="12dp"/>
+    </LinearLayout>
+    <View android:layout_width="match_parent" android:layout_height="1dp"
+        android:background="#BF00FF" android:alpha="0.4"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="20dp" android:background="#0A0A0F">
+        <androidx.cardview.widget.CardView android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="#12121A" app:cardCornerRadius="12dp" app:cardElevation="0dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="4dp">
+                <Button android:id="@+id/btnBypassMaxToNormal" android:layout_width="match_parent"
+                    android:layout_height="58dp" android:text="BYPASS  FFM = FFN"
+                    android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold"
+                    android:background="@drawable/btn_primary" android:stateListAnimator="@null"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Free Fire MAX  ->  Free Fire Normal" android:textColor="#7B2FBE"
+                    android:textSize="10sp" android:layout_gravity="center"
+                    android:layout_marginTop="4dp" android:layout_marginBottom="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <androidx.cardview.widget.CardView android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="#12121A" app:cardCornerRadius="12dp" app:cardElevation="0dp">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:orientation="vertical" android:padding="4dp">
+                <Button android:id="@+id/btnBypassNormalToMax" android:layout_width="match_parent"
+                    android:layout_height="58dp" android:text="BYPASS  FFN = FFM"
+                    android:textColor="#FFFFFF" android:textSize="15sp" android:textStyle="bold"
+                    android:background="@drawable/btn_secondary" android:stateListAnimator="@null"/>
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Free Fire Normal  ->  Free Fire MAX" android:textColor="#7B2FBE"
+                    android:textSize="10sp" android:layout_gravity="center"
+                    android:layout_marginTop="4dp" android:layout_marginBottom="4dp"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+        <Button android:id="@+id/btnClearLog" android:layout_width="match_parent"
+            android:layout_height="48dp" android:text="LIMPAR TERMINAL"
+            android:textColor="#9B59B6" android:textSize="13sp" android:textStyle="bold"
+            android:background="@drawable/btn_clear" android:stateListAnimator="@null"/>
+    </LinearLayout>
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1E1E2E"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="#0D0D16" android:orientation="horizontal"
+        android:paddingHorizontal="16dp" android:paddingVertical="8dp">
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="TERMINAL  //  BYPASS LOG"
+            android:textColor="#6A0DAD" android:textSize="11sp" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="v1.0" android:textColor="#3D1A6B" android:textSize="10sp"/>
+    </LinearLayout>
+    <ScrollView android:id="@+id/scrollLog" android:layout_width="match_parent"
+        android:layout_height="0dp" android:layout_weight="1"
+        android:background="#060610" android:padding="12dp" android:scrollbars="none">
+        <TextView android:id="@+id/tvLog" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:fontFamily="monospace"
+            android:text="" android:textColor="#00FF41" android:textSize="11sp"
+            android:lineSpacingExtra="4dp"/>
+    </ScrollView>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:background="#0D0D16" android:paddingVertical="10dp" android:gravity="center">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="REPLAY X  •  BYPASS SYSTEM  •  FREE FIRE"
+            android:textColor="#3D1A6B" android:textSize="9sp" android:letterSpacing="0.2"/>
+    </LinearLayout>
+</LinearLayout>
