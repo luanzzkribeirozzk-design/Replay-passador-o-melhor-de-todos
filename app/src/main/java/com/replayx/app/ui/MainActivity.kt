@@ -42,14 +42,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkShizuku(): Boolean {
         return try {
-            if (!Shizuku.pingBinder()) { log("[ERRO] Shizuku nao esta ativo!"); return false }
+            if (!Shizuku.pingBinder()) {
+                log("[ERRO] Shizuku nao esta ativo!")
+                return false
+            }
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(SHIZUKU_CODE)
                 log("[AGUARDANDO] Conceda permissao ao Shizuku...")
                 return false
             }
             true
-        } catch (ex: Exception) { log("[ERRO] " + ex.message.orEmpty()); false }
+        } catch (ex: Exception) {
+            log("[ERRO] " + ex.message.orEmpty())
+            false
+        }
     }
 
     private fun startTransfer(from: String, to: String, label: String) {
@@ -63,7 +69,9 @@ class MainActivity : AppCompatActivity() {
             log("===========================")
             delay(200)
             val result = withContext(Dispatchers.IO) {
-                service.transferReplays(from, to) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                service.transferReplays(from, to) { msg ->
+                    lifecycleScope.launch(Dispatchers.Main) { log(msg) }
+                }
             }
             log("===========================")
             if (result.success) {
@@ -80,8 +88,9 @@ class MainActivity : AppCompatActivity() {
     private fun log(msg: String) {
         val t = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
         val cur = binding.tvLog.text.toString()
-        binding.tvLog.text = if (cur.isEmpty()) "[" + t + "] " + msg else cur + "
+        val next = if (cur.isEmpty()) "[" + t + "] " + msg else cur + "
 [" + t + "] " + msg
+        binding.tvLog.text = next
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
 
