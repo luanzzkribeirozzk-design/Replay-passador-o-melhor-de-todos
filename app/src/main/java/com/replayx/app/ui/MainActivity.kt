@@ -19,115 +19,84 @@ import java.util.Locale
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val transferService = ReplayTransferService()
+    private val service = ReplayTransferService()
     private val SHIZUKU_CODE = 1001
 
-    private val shizukuBinderReceiver = Shizuku.OnBinderReceivedListener {
-        updateShizukuStatus(true)
-    }
-
-    private val shizukuDeadReceiver = Shizuku.OnBinderDeadListener {
-        updateShizukuStatus(false)
-    }
+    private val binderReceived = Shizuku.OnBinderReceivedListener { updateStatus(true) }
+    private val binderDead = Shizuku.OnBinderDeadListener { updateStatus(false) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupUI()
-        setupShizuku()
-    }
-
-    private fun setupUI() {
+        Shizuku.addBinderReceivedListenerSticky(binderReceived)
+        Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (!checkShizukuReady()) return@setOnClickListener
-            startTransfer("com.dts.freefiremax", "com.dts.freefireth", "FFM -> FFN")
+            if (checkShizuku()) startTransfer("com.dts.freefiremax", "com.dts.freefireth", "FFM->FFN")
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (!checkShizukuReady()) return@setOnClickListener
-            startTransfer("com.dts.freefireth", "com.dts.freefiremax", "FFN -> FFM")
+            if (checkShizuku()) startTransfer("com.dts.freefireth", "com.dts.freefiremax", "FFN->FFM")
         }
-        binding.btnClearLog.setOnClickListener {
-            clearLog()
-        }
+        binding.btnClearLog.setOnClickListener { clearLog() }
     }
 
-    private fun setupShizuku() {
-        Shizuku.addBinderReceivedListenerSticky(shizukuBinderReceiver)
-        Shizuku.addBinderDeadListener(shizukuDeadReceiver)
-    }
-
-    private fun checkShizukuReady(): Boolean {
+    private fun checkShizuku(): Boolean {
         return try {
-            if (!Shizuku.pingBinder()) {
-                appendLog("[ERRO] Shizuku nao esta ativo!")
-                return false
-            }
+            if (!Shizuku.pingBinder()) { log("[ERRO] Shizuku nao esta ativo!"); return false }
             if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(SHIZUKU_CODE)
-                appendLog("[AGUARDANDO] Conceda permissao ao Shizuku...")
+                log("[AGUARDANDO] Conceda permissao ao Shizuku...")
                 return false
             }
             true
-        } catch (e: Exception) {
-            appendLog("[ERRO] Shizuku: ${e.message}")
-            false
-        }
+        } catch (ex: Exception) { log("[ERRO] " + ex.message.orEmpty()); false }
     }
 
     private fun startTransfer(from: String, to: String, label: String) {
         binding.btnBypassMaxToNormal.isEnabled = false
         binding.btnBypassNormalToMax.isEnabled = false
-
         lifecycleScope.launch {
-            appendLog("===========================")
-            appendLog("[INICIANDO] Bypass $label")
-            appendLog("[FROM] $from")
-            appendLog("[TO  ] $to")
-            appendLog("===========================")
+            log("===========================")
+            log("[INICIO] " + label)
+            log("[FROM] " + from)
+            log("[TO] " + to)
+            log("===========================")
             delay(200)
-
             val result = withContext(Dispatchers.IO) {
-                transferService.transferReplays(from, to) { msg ->
-                    lifecycleScope.launch(Dispatchers.Main) { appendLog(msg) }
-                }
+                service.transferReplays(from, to) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
             }
-
-            appendLog("===========================")
+            log("===========================")
             if (result.success) {
-                appendLog("[OK] CONCLUIDO! ${result.filesCopied} replay(s)")
+                log("[OK] " + result.filesCopied.toString() + " replay(s) copiado(s)")
             } else {
-                appendLog("[ERRO] ${result.errorMessage}")
+                log("[ERRO] " + result.errorMessage)
             }
-            appendLog("===========================")
-
+            log("===========================")
             binding.btnBypassMaxToNormal.isEnabled = true
             binding.btnBypassNormalToMax.isEnabled = true
         }
     }
 
-    private fun appendLog(message: String) {
-        val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-        val current = binding.tvLog.text.toString()
-        val newText = if (current.isEmpty()) "[$time] $message"
-                      else "$current
-[$time] $message"
-        binding.tvLog.text = newText
+    private fun log(msg: String) {
+        val t = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        val cur = binding.tvLog.text.toString()
+        binding.tvLog.text = if (cur.isEmpty()) "[" + t + "] " + msg else cur + "
+[" + t + "] " + msg
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
 
     private fun clearLog() {
         binding.tvLog.text = ""
-        appendLog("[SISTEMA] Log limpo.")
+        log("[SISTEMA] Log limpo.")
     }
 
-    private fun updateShizukuStatus(active: Boolean) {
+    private fun updateStatus(active: Boolean) {
         runOnUiThread {
             if (active) {
-                binding.tvShizukuStatus.text = "● SHIZUKU ATIVO"
+                binding.tvShizukuStatus.text = "SHIZUKU ATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_green_light))
             } else {
-                binding.tvShizukuStatus.text = "● SHIZUKU INATIVO"
+                binding.tvShizukuStatus.text = "SHIZUKU INATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_red_light))
             }
         }
@@ -135,7 +104,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Shizuku.removeBinderReceivedListener(shizukuBinderReceiver)
-        Shizuku.removeBinderDeadListener(shizukuDeadReceiver)
+        Shizuku.removeBinderReceivedListener(binderReceived)
+        Shizuku.removeBinderDeadListener(binderDead)
     }
 }
