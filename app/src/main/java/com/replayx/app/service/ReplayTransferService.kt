@@ -20,34 +20,36 @@ class ReplayTransferService {
             logCallback("[SCAN] Verificando origem...")
             logCallback("[PATH] $sourcePath")
 
-            val checkResult = execCmd("ls "$sourcePath" 2>&1")
-            logCallback("[LS  ] ${checkResult.trim().take(80)}")
+            val checkResult = runCmd("ls $sourcePath 2>&1")
+            logCallback("[LS  ] " + checkResult.trim().take(80))
 
             if (checkResult.contains("No such file") || checkResult.contains("cannot access")) {
                 return TransferResult(false, 0, "Pasta MReplays nao encontrada em $sourcePackage")
             }
 
             val files = checkResult.trim().split("
-").filter { it.isNotBlank() }
-            logCallback("[INFO] ${files.size} item(ns) encontrado(s)")
+").filter { line -> line.isNotBlank() }
+            logCallback("[INFO] " + files.size + " arquivo(s) encontrado(s)")
 
             if (files.isEmpty()) {
                 return TransferResult(false, 0, "Nenhum replay encontrado")
             }
 
             logCallback("[MKDIR] Criando pasta destino...")
-            execCmd("mkdir -p "$destPath"")
+            runCmd("mkdir -p $destPath")
 
             var copied = 0
-            files.forEachIndexed { i, name ->
-                if (name.isBlank()) return@forEachIndexed
-                logCallback("[COPY] [${i + 1}/${files.size}] $name")
-                val r = execCmd("cp -rf "$sourcePath/$name" "$destPath/$name" 2>&1")
-                if (r.isBlank() || !r.lowercase().contains("error")) {
+            var index = 0
+            for (name in files) {
+                if (name.isBlank()) continue
+                index++
+                logCallback("[COPY] [$index/${files.size}] $name")
+                val result = runCmd("cp -rf $sourcePath/$name $destPath/$name 2>&1")
+                if (result.isBlank() || !result.lowercase().contains("error")) {
                     copied++
                     logCallback("[OK  ] $name")
                 } else {
-                    logCallback("[WARN] $name -> $r")
+                    logCallback("[WARN] $name -> $result")
                 }
             }
 
@@ -55,22 +57,28 @@ class ReplayTransferService {
             TransferResult(true, copied)
 
         } catch (e: Exception) {
-            logCallback("[EXCEPTION] ${e.message}")
+            logCallback("[EXCEPTION] " + e.message)
             TransferResult(false, 0, e.message ?: "Erro desconhecido")
         }
     }
 
-    private fun execCmd(command: String): String {
+    private fun runCmd(command: String): String {
         return try {
-            val cls = Class.forName("rikka.shizuku.Shizuku")
-            val method = cls.getMethod("newProcess", Array<String>::class.java, Array<String>::class.java, String::class.java)
-            val process = method.invoke(null, arrayOf("sh", "-c", command), null, null) as Process
-            val stdout = process.inputStream.bufferedReader().readText()
-            val stderr = process.errorStream.bufferedReader().readText()
+            val shizukuClass = Class.forName("rikka.shizuku.Shizuku")
+            val newProcess = shizukuClass.getMethod(
+                "newProcess",
+                Array<String>::class.java,
+                Array<String>::class.java,
+                String::class.java
+            )
+            val args = arrayOf("sh", "-c", command)
+            val process = newProcess.invoke(null, args, null, null) as Process
+            val out = process.inputStream.bufferedReader().readText()
+            val err = process.errorStream.bufferedReader().readText()
             process.waitFor()
-            stdout.ifBlank { stderr }
+            if (out.isNotBlank()) out else err
         } catch (e: Exception) {
-            "ERRO_CMD: ${e.message}"
+            "ERRO: " + e.message
         }
     }
 }
