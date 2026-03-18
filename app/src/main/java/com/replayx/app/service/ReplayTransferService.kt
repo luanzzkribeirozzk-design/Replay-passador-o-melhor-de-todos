@@ -14,12 +14,23 @@ class ReplayTransferService {
         logCallback("[EXEC] Copiando replay FFM -> FFN...")
         val result = ShizukuHelper.runMaxToNormal()
         logCallback("[OUT] " + result)
-        return if (result.contains("sucesso") || result.contains("copiado")) {
-            logCallback("[OK] Replay transferido!")
-            TransferResult(true, 1)
-        } else {
-            logCallback("[ERRO] " + result)
-            TransferResult(false, 0, result)
+        return when {
+            result.contains("COPIADO_OK") || result.contains("sucesso") -> {
+                logCallback("[OK] Replay transferido com sucesso!")
+                TransferResult(true, 1)
+            }
+            result.contains("NAO_ENCONTRADO") -> {
+                logCallback("[AVISO] Nenhum replay encontrado no FF Max")
+                TransferResult(false, 0, "Nenhum replay no FF Max")
+            }
+            result.startsWith("ERR") -> {
+                logCallback("[ERRO] " + result)
+                TransferResult(false, 0, result)
+            }
+            else -> {
+                logCallback("[OK] Operacao concluida: " + result)
+                TransferResult(true, 1)
+            }
         }
     }
 
@@ -27,12 +38,23 @@ class ReplayTransferService {
         logCallback("[EXEC] Copiando replay FFN -> FFM...")
         val result = ShizukuHelper.runNormalToMax()
         logCallback("[OUT] " + result)
-        return if (result.contains("sucesso") || result.contains("copiado")) {
-            logCallback("[OK] Replay transferido!")
-            TransferResult(true, 1)
-        } else {
-            logCallback("[ERRO] " + result)
-            TransferResult(false, 0, result)
+        return when {
+            result.contains("COPIADO_OK") || result.contains("sucesso") -> {
+                logCallback("[OK] Replay transferido com sucesso!")
+                TransferResult(true, 1)
+            }
+            result.contains("NAO_ENCONTRADO") -> {
+                logCallback("[AVISO] Nenhum replay encontrado no FF Normal")
+                TransferResult(false, 0, "Nenhum replay no FF Normal")
+            }
+            result.startsWith("ERR") -> {
+                logCallback("[ERRO] " + result)
+                TransferResult(false, 0, result)
+            }
+            else -> {
+                logCallback("[OK] Operacao concluida: " + result)
+                TransferResult(true, 1)
+            }
         }
     }
 }
