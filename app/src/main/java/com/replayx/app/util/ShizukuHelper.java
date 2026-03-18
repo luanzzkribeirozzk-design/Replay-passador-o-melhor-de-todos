@@ -1,20 +1,32 @@
 package com.replayx.app.util;
 
+import java.lang.reflect.Method;
+
 public class ShizukuHelper {
 
     public static String run(String cmd) {
         try {
             Class<?> cls = Class.forName("rikka.shizuku.Shizuku");
-            java.lang.reflect.Method[] methods = cls.getMethods();
-            java.lang.reflect.Method target = null;
-            for (java.lang.reflect.Method m : methods) {
+            Method target = null;
+            // Tentar metodos publicos primeiro
+            for (Method m : cls.getMethods()) {
                 if (m.getName().equals("newProcess")) {
                     target = m;
                     break;
                 }
             }
+            // Se nao achou, tentar metodos declarados (incluindo privados)
             if (target == null) {
-                return "ERR: newProcess nao encontrado";
+                for (Method m : cls.getDeclaredMethods()) {
+                    if (m.getName().equals("newProcess")) {
+                        m.setAccessible(true);
+                        target = m;
+                        break;
+                    }
+                }
+            }
+            if (target == null) {
+                return "ERR: newProcess nao encontrado em nenhum nivel";
             }
             String[] args = new String[]{"sh", "-c", cmd};
             Object[] params = new Object[]{args, null, null};
