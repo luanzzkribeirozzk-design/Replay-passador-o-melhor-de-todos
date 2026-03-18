@@ -16,10 +16,12 @@ public class ShizukuHelper {
         sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
         sb.append("cp -f \"$JSON\" ").append(dst).append("/$JNAME; ");
         sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
-        // Mostrar conteudo do JSON para debug
-        sb.append("echo JSON_CONTENT:; ");
-        sb.append("cat ").append(dst).append("/$JNAME; ");
-        sb.append("echo; echo COPIADO_OK");
+        // Extrair apenas campos relevantes do JSON
+        sb.append("echo VER=$(grep -o '\"Version\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
+        sb.append("echo GAMEVER=$(grep -o '\"GameVersion\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
+        sb.append("echo PKG=$(grep -o '\"PackageName\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
+        sb.append("echo APPID=$(grep -o '\"AppId\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
+        sb.append("echo COPIADO_OK");
         return run(sb.toString());
     }
 
