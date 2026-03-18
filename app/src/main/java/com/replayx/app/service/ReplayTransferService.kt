@@ -6,7 +6,7 @@ data class TransferResult(val success: Boolean, val filesCopied: Int = 0, val er
 
 class ReplayTransferService {
 
-    fun transferMaxToNormal(log: (String) -> Unit): TransferResult {
+    fun transferMaxToNormal(count: Int, log: (String) -> Unit): TransferResult {
         log("[SYS] >> BYPASS_MODULE_LOAD 0x01")
         log("[SYS] >> PROC_INIT... OK")
         log("[MEM] >> ALLOC 4096B... OK")
@@ -20,6 +20,7 @@ class ReplayTransferService {
         return if (r.contains("COPIADO_OK") || r.contains("sucesso")) {
             log("[SYS] >> CHMOD_APPLY... OK")
             log("[SYS] >> STATUS: 0x00 SUCCESS")
+            log("[SYS] >> TOTAL_BYPASS_COUNT: " + count)
             log("[SYS] >> Bypass activated 0xAC")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
@@ -31,7 +32,7 @@ class ReplayTransferService {
         }
     }
 
-    fun transferNormalToMax(log: (String) -> Unit): TransferResult {
+    fun transferNormalToMax(count: Int, log: (String) -> Unit): TransferResult {
         log("[SYS] >> BYPASS_MODULE_LOAD 0x02")
         log("[SYS] >> PROC_INIT... OK")
         log("[MEM] >> ALLOC 4096B... OK")
@@ -45,6 +46,7 @@ class ReplayTransferService {
         return if (r.contains("COPIADO_OK") || r.contains("sucesso")) {
             log("[SYS] >> CHMOD_APPLY... OK")
             log("[SYS] >> STATUS: 0x00 SUCCESS")
+            log("[SYS] >> TOTAL_BYPASS_COUNT: " + count)
             log("[SYS] >> Bypass activated 0xAC")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
