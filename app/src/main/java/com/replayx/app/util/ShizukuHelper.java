@@ -11,14 +11,15 @@ public class ShizukuHelper {
         sb.append("JSON=$(ls -t ").append(src).append("/*.json 2>/dev/null | head -n 1); ");
         sb.append("if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; ");
         sb.append("BNAME=$(basename \"$BIN\"); ");
+        sb.append("JNAME=$(basename \"$JSON\"); ");
         sb.append("cp -f \"$BIN\" ").append(dst).append("/$BNAME; ");
         sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
-        sb.append("if [ -n \"$JSON\" ]; then ");
-        sb.append("JNAME=$(basename \"$JSON\"); ");
         sb.append("cp -f \"$JSON\" ").append(dst).append("/$JNAME; ");
         sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
-        sb.append("fi; ");
-        sb.append("echo COPIADO_OK");
+        // Mostrar conteudo do JSON para debug
+        sb.append("echo JSON_CONTENT:; ");
+        sb.append("cat ").append(dst).append("/$JNAME; ");
+        sb.append("echo; echo COPIADO_OK");
         return run(sb.toString());
     }
 
