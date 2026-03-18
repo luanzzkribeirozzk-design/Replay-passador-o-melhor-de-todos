@@ -24,34 +24,32 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private val SHIZUKU_CODE = 1001
     private val PREFS_NAME = "replayx_prefs"
     private val PREF_HIDE = "hide_stream"
+    private val PREF_COUNT = "bypass_count"
     private val binderReceived = Shizuku.OnBinderReceivedListener { updateStatus(true) }
     private val binderDead = Shizuku.OnBinderDeadListener { updateStatus(false) }
     private var tts: TextToSpeech? = null
     private var ttsReady = false
+    private var bypassCount = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         tts = TextToSpeech(this, this)
-
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        bypassCount = prefs.getInt(PREF_COUNT, 0)
         val hideActive = prefs.getBoolean(PREF_HIDE, false)
         applyHideStream(hideActive)
         binding.switchHideStream.isChecked = hideActive
         updateHideStreamUI(hideActive)
-
         binding.switchHideStream.setOnCheckedChangeListener { _, isChecked ->
             applyHideStream(isChecked)
             updateHideStreamUI(isChecked)
             prefs.edit().putBoolean(PREF_HIDE, isChecked).apply()
             log(if (isChecked) "[SYS] >> HIDE_STREAM: ENABLED" else "[SYS] >> HIDE_STREAM: DISABLED")
         }
-
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
-
         binding.btnBypassMaxToNormal.setOnClickListener {
             if (checkShizuku()) { speak("Bypass activated"); startTransfer("maxToNormal") }
         }
@@ -98,13 +96,17 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun startTransfer(direction: String) {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         lifecycleScope.launch {
             log("--------------------------------")
+            bypassCount++
+            prefs.edit().putInt(PREF_COUNT, bypassCount).apply()
+            val count = bypassCount
             val result = withContext(Dispatchers.IO) {
                 if (direction == "maxToNormal") {
-                    service.transferMaxToNormal { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                    service.transferMaxToNormal(count) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 } else {
-                    service.transferNormalToMax { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                    service.transferNormalToMax(count) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 }
             }
             if (!result.success) log("[ERR] >> BYPASS_FAIL")
@@ -126,10 +128,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun updateStatus(active: Boolean) {
         runOnUiThread {
             if (active) {
-                binding.tvShizukuStatus.text = "SHIZUKU ATIVO"
+                binding.tvShizukuStatus.text = "● SHIZUKU ATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_green_light))
             } else {
-                binding.tvShizukuStatus.text = "SHIZUKU INATIVO"
+                binding.tvShizukuStatus.text = "● SHIZUKU INATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_red_light))
             }
         }
