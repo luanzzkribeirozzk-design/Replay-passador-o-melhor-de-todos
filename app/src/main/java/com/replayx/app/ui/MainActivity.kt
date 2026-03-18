@@ -1,11 +1,13 @@
 package com.replayx.app.ui
 
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.replayx.app.R
 import com.replayx.app.databinding.ActivityMainBinding
 import com.replayx.app.service.ReplayTransferService
 import kotlinx.coroutines.Dispatchers
@@ -25,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     private val PREF_HIDE = "hide_stream"
     private val binderReceived = Shizuku.OnBinderReceivedListener { updateStatus(true) }
     private val binderDead = Shizuku.OnBinderDeadListener { updateStatus(false) }
+    private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,12 +51,21 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addBinderDeadListener(binderDead)
 
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) startTransfer("maxToNormal")
+            if (checkShizuku()) { playBypassAudio(); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) startTransfer("normalToMax")
+            if (checkShizuku()) { playBypassAudio(); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
+    }
+
+    private fun playBypassAudio() {
+        try {
+            mediaPlayer?.release()
+            mediaPlayer = MediaPlayer.create(this, R.raw.bypass_activated)
+            mediaPlayer?.start()
+            mediaPlayer?.setOnCompletionListener { it.release() }
+        } catch (e: Exception) { }
     }
 
     private fun applyHideStream(active: Boolean) {
@@ -125,6 +137,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaPlayer?.release()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
     }
