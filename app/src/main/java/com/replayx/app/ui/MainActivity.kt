@@ -1,13 +1,12 @@
 package com.replayx.app.ui
 
 import android.content.pm.PackageManager
-import android.media.MediaPlayer
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.replayx.app.R
 import com.replayx.app.databinding.ActivityMainBinding
 import com.replayx.app.service.ReplayTransferService
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private lateinit var binding: ActivityMainBinding
     private val service = ReplayTransferService()
@@ -27,12 +26,15 @@ class MainActivity : AppCompatActivity() {
     private val PREF_HIDE = "hide_stream"
     private val binderReceived = Shizuku.OnBinderReceivedListener { updateStatus(true) }
     private val binderDead = Shizuku.OnBinderDeadListener { updateStatus(false) }
-    private var mediaPlayer: MediaPlayer? = null
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        tts = TextToSpeech(this, this)
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val hideActive = prefs.getBoolean(PREF_HIDE, false)
@@ -51,21 +53,24 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addBinderDeadListener(binderDead)
 
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) { playBypassAudio(); startTransfer("maxToNormal") }
+            if (checkShizuku()) { speak("Bypass activated"); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) { playBypassAudio(); startTransfer("normalToMax") }
+            if (checkShizuku()) { speak("Bypass activated"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
 
-    private fun playBypassAudio() {
-        try {
-            mediaPlayer?.release()
-            mediaPlayer = MediaPlayer.create(this, R.raw.bypass_activated)
-            mediaPlayer?.start()
-            mediaPlayer?.setOnCompletionListener { it.release() }
-        } catch (e: Exception) { }
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts?.language = Locale.US
+            tts?.setSpeechRate(0.9f)
+            ttsReady = true
+        }
+    }
+
+    private fun speak(text: String) {
+        if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun applyHideStream(active: Boolean) {
@@ -87,15 +92,12 @@ class MainActivity : AppCompatActivity() {
         return try {
             if (!Shizuku.pingBinder()) { log("[ERR] SHIZUKU_DEAD"); false }
             else if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Shizuku.requestPermission(SHIZUKU_CODE)
-                log("[SYS] SHIZUKU_PERM_REQUEST"); false
+                Shizuku.requestPermission(SHIZUKU_CODE); log("[SYS] SHIZUKU_PERM_REQUEST"); false
             } else true
         } catch (ex: Exception) { log("[ERR] " + ex.message.orEmpty()); false }
     }
 
     private fun startTransfer(direction: String) {
-        binding.btnBypassMaxToNormal.isEnabled = false
-        binding.btnBypassNormalToMax.isEnabled = false
         lifecycleScope.launch {
             log("--------------------------------")
             val result = withContext(Dispatchers.IO) {
@@ -105,10 +107,8 @@ class MainActivity : AppCompatActivity() {
                     service.transferNormalToMax { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 }
             }
-            if (!result.success) log("[ERR] >> BYPASS_FAIL: " + result.errorMessage)
+            if (!result.success) log("[ERR] >> BYPASS_FAIL")
             log("--------------------------------")
-            binding.btnBypassMaxToNormal.isEnabled = true
-            binding.btnBypassNormalToMax.isEnabled = true
         }
     }
 
@@ -126,10 +126,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateStatus(active: Boolean) {
         runOnUiThread {
             if (active) {
-                binding.tvShizukuStatus.text = "● SHIZUKU ATIVO"
+                binding.tvShizukuStatus.text = "SHIZUKU ATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_green_light))
             } else {
-                binding.tvShizukuStatus.text = "● SHIZUKU INATIVO"
+                binding.tvShizukuStatus.text = "SHIZUKU INATIVO"
                 binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_red_light))
             }
         }
@@ -137,7 +137,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mediaPlayer?.release()
+        tts?.stop(); tts?.shutdown()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
     }
