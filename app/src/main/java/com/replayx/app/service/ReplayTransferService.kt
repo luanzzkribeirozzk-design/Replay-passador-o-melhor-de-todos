@@ -11,31 +11,28 @@ data class TransferResult(
 class ReplayTransferService {
 
     fun transferMaxToNormal(logCallback: (String) -> Unit): TransferResult {
-        return runScript(ShizukuHelper.SCRIPT_MAX_TO_NORMAL, "FFM->FFN", logCallback)
+        logCallback("[EXEC] Copiando replay FFM -> FFN...")
+        val result = ShizukuHelper.runMaxToNormal()
+        logCallback("[OUT] " + result)
+        return if (result.contains("sucesso") || result.contains("copiado")) {
+            logCallback("[OK] Replay transferido!")
+            TransferResult(true, 1)
+        } else {
+            logCallback("[ERRO] " + result)
+            TransferResult(false, 0, result)
+        }
     }
 
     fun transferNormalToMax(logCallback: (String) -> Unit): TransferResult {
-        return runScript(ShizukuHelper.SCRIPT_NORMAL_TO_MAX, "FFN->FFM", logCallback)
-    }
-
-    private fun runScript(script: String, label: String, logCallback: (String) -> Unit): TransferResult {
-        return try {
-            logCallback("[EXEC] Executando bypass " + label + "...")
-            val result = ShizukuHelper.run(script)
-            logCallback("[OUT] " + result)
-            if (result.contains("sucesso") || result.contains("copiado")) {
-                logCallback("[OK] Replay transferido!")
-                TransferResult(true, 1)
-            } else if (result.startsWith("ERR")) {
-                logCallback("[ERRO] " + result)
-                TransferResult(false, 0, result)
-            } else {
-                logCallback("[OK] Operacao concluida")
-                TransferResult(true, 1)
-            }
-        } catch (ex: Exception) {
-            logCallback("[ERRO] " + ex.message.orEmpty())
-            TransferResult(false, 0, ex.message.orEmpty())
+        logCallback("[EXEC] Copiando replay FFN -> FFM...")
+        val result = ShizukuHelper.runNormalToMax()
+        logCallback("[OUT] " + result)
+        return if (result.contains("sucesso") || result.contains("copiado")) {
+            logCallback("[OK] Replay transferido!")
+            TransferResult(true, 1)
+        } else {
+            logCallback("[ERRO] " + result)
+            TransferResult(false, 0, result)
         }
     }
 }
