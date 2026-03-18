@@ -32,10 +32,10 @@ class MainActivity : AppCompatActivity() {
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) startTransfer("com.dts.freefiremax", "com.dts.freefireth", "FFM->FFN")
+            if (checkShizuku()) startTransfer("maxToNormal")
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) startTransfer("com.dts.freefireth", "com.dts.freefiremax", "FFN->FFM")
+            if (checkShizuku()) startTransfer("normalToMax")
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
@@ -58,24 +58,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun startTransfer(from: String, to: String, label: String) {
+    private fun startTransfer(direction: String) {
         binding.btnBypassMaxToNormal.isEnabled = false
         binding.btnBypassNormalToMax.isEnabled = false
         lifecycleScope.launch {
             log("===========================")
-            log("[INICIO] " + label)
-            log("[FROM] " + from)
-            log("[TO] " + to)
+            log("[INICIO] Bypass " + direction)
             log("===========================")
             delay(200)
             val result = withContext(Dispatchers.IO) {
-                service.transferReplays(from, to) { msg ->
-                    lifecycleScope.launch(Dispatchers.Main) { log(msg) }
+                if (direction == "maxToNormal") {
+                    service.transferMaxToNormal { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                } else {
+                    service.transferNormalToMax { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 }
             }
             log("===========================")
             if (result.success) {
-                log("[OK] " + result.filesCopied.toString() + " replay(s) copiado(s)")
+                log("[OK] BYPASS CONCLUIDO!")
             } else {
                 log("[ERRO] " + result.errorMessage)
             }
