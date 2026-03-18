@@ -16,11 +16,15 @@ class ReplayTransferService {
         log("[CMD] >> exec bin/transfer --mode=0x01")
         log("[SYS] >> CHECKSUM_VERIFY... OK")
         val r = ShizukuHelper.runMaxToNormal()
-        log("[SYS] >> IO_WRITE... OK")
-        return if (r.contains("COPIADO_OK") || r.contains("sucesso")) {
+        // Mostrar JSON no log para debug
+        val lines = r.split("\n")
+        for (line in lines) {
+            if (line.isNotBlank()) log("[DBG] " + line.take(60))
+        }
+        return if (r.contains("COPIADO_OK")) {
             log("[SYS] >> CHMOD_APPLY... OK")
             log("[SYS] >> STATUS: 0x00 SUCCESS")
-            log("[SYS] >> TOTAL_BYPASS_COUNT: " + count)
+            log("[SYS] >> TOTAL_BYPASS_COUNT: $count")
             log("[SYS] >> Bypass activated 0xAC")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
@@ -43,10 +47,10 @@ class ReplayTransferService {
         log("[SYS] >> CHECKSUM_VERIFY... OK")
         val r = ShizukuHelper.runNormalToMax()
         log("[SYS] >> IO_WRITE... OK")
-        return if (r.contains("COPIADO_OK") || r.contains("sucesso")) {
+        return if (r.contains("COPIADO_OK")) {
             log("[SYS] >> CHMOD_APPLY... OK")
             log("[SYS] >> STATUS: 0x00 SUCCESS")
-            log("[SYS] >> TOTAL_BYPASS_COUNT: " + count)
+            log("[SYS] >> TOTAL_BYPASS_COUNT: $count")
             log("[SYS] >> Bypass activated 0xAC")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
