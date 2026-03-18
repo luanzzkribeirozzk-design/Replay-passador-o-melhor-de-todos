@@ -9,7 +9,6 @@ import androidx.lifecycle.lifecycleScope
 import com.replayx.app.databinding.ActivityMainBinding
 import com.replayx.app.service.ReplayTransferService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
@@ -26,14 +25,12 @@ class MainActivity : AppCompatActivity() {
     private val PREF_HIDE = "hide_stream"
     private val binderReceived = Shizuku.OnBinderReceivedListener { updateStatus(true) }
     private val binderDead = Shizuku.OnBinderDeadListener { updateStatus(false) }
-    private var applyingJob: kotlinx.coroutines.Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Restaurar estado do Hide Stream ao abrir
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val hideActive = prefs.getBoolean(PREF_HIDE, false)
         applyHideStream(hideActive)
@@ -44,11 +41,12 @@ class MainActivity : AppCompatActivity() {
             applyHideStream(isChecked)
             updateHideStreamUI(isChecked)
             prefs.edit().putBoolean(PREF_HIDE, isChecked).apply()
-            log(if (isChecked) "[SYS] >> HIDE_STREAM: ON" else "[SYS] >> HIDE_STREAM: OFF")
+            log(if (isChecked) "[SYS] >> HIDE_STREAM: ENABLED" else "[SYS] >> HIDE_STREAM: DISABLED")
         }
 
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
+
         binding.btnBypassMaxToNormal.setOnClickListener {
             if (checkShizuku()) startTransfer("maxToNormal")
         }
@@ -59,17 +57,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun applyHideStream(active: Boolean) {
-        if (active) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
+        if (active) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     private fun updateHideStreamUI(active: Boolean) {
         if (active) {
             binding.tvHideStreamStatus.text = "HIDE STREAM: ON"
-            binding.tvHideStreamStatus.setTextColor(getColor(android.R.color.holo_green_light))
+            binding.tvHideStreamStatus.setTextColor(0xFF00FF41.toInt())
         } else {
             binding.tvHideStreamStatus.text = "HIDE STREAM: OFF"
             binding.tvHideStreamStatus.setTextColor(0xFF444444.toInt())
@@ -78,13 +73,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkShizuku(): Boolean {
         return try {
-            if (!Shizuku.pingBinder()) { log("[ERR] SHIZUKU_DEAD"); return false }
-            if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+            if (!Shizuku.pingBinder()) { log("[ERR] SHIZUKU_DEAD"); false }
+            else if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                 Shizuku.requestPermission(SHIZUKU_CODE)
-                log("[SYS] SHIZUKU_PERM_REQUEST")
-                return false
-            }
-            true
+                log("[SYS] SHIZUKU_PERM_REQUEST"); false
+            } else true
         } catch (ex: Exception) { log("[ERR] " + ex.message.orEmpty()); false }
     }
 
@@ -93,17 +86,6 @@ class MainActivity : AppCompatActivity() {
         binding.btnBypassNormalToMax.isEnabled = false
         lifecycleScope.launch {
             log("--------------------------------")
-            delay(100)
-            val dots = listOf(".", "..", "...")
-            applyingJob = lifecycleScope.launch {
-                var i = 0
-                while (true) {
-                    binding.tvApplying.text = "Aplicando bypass" + dots[i % 3]
-                    binding.tvApplying.visibility = View.VISIBLE
-                    i++
-                    delay(400)
-                }
-            }
             val result = withContext(Dispatchers.IO) {
                 if (direction == "maxToNormal") {
                     service.transferMaxToNormal { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
@@ -111,17 +93,8 @@ class MainActivity : AppCompatActivity() {
                     service.transferNormalToMax { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 }
             }
-            applyingJob?.cancel()
-            if (result.success) {
-                binding.tvApplying.text = "Bypass aplicado!"
-                log("[SYS] >> BYPASS_COMPLETE 0x00")
-            } else {
-                binding.tvApplying.text = "Falha no bypass"
-                log("[ERR] >> BYPASS_FAIL: " + result.errorMessage)
-            }
+            if (!result.success) log("[ERR] >> BYPASS_FAIL: " + result.errorMessage)
             log("--------------------------------")
-            delay(2000)
-            binding.tvApplying.visibility = View.GONE
             binding.btnBypassMaxToNormal.isEnabled = true
             binding.btnBypassNormalToMax.isEnabled = true
         }
@@ -152,7 +125,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        applyingJob?.cancel()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
     }
