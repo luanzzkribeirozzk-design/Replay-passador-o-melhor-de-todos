@@ -5,16 +5,16 @@ public class ShizukuHelper {
     public static String runMaxToNormal() {
         String src = "/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays";
         String dst = "/storage/emulated/0/Android/data/com.dts.freefireth/files/MReplays";
-        return run(buildScript(src, dst));
+        return run(buildScript(src, dst, "1.122.1"));
     }
 
     public static String runNormalToMax() {
         String src = "/storage/emulated/0/Android/data/com.dts.freefireth/files/MReplays";
         String dst = "/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays";
-        return run(buildScript(src, dst));
+        return run(buildScript(src, dst, null));
     }
 
-    private static String buildScript(String src, String dst) {
+    private static String buildScript(String src, String dst, String version) {
         StringBuilder sb = new StringBuilder();
         sb.append("mkdir -p ").append(dst).append("; ");
         sb.append("BIN=$(ls -t ").append(src).append("/*.bin 2>/dev/null | head -n 1); ");
@@ -24,6 +24,13 @@ public class ShizukuHelper {
         sb.append("if [ -n \"$JSON\" ]; then cp -f \"$JSON\" ").append(dst).append("/; fi; ");
         sb.append("BNAME=$(basename \"$BIN\"); ");
         sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
+        if (version != null) {
+            sb.append("if [ -n \"$JSON\" ]; then ");
+            sb.append("JNAME=$(basename \"$JSON\"); ");
+            sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
+            sb.append("sed -i s/freefiremax/freefireth/g ").append(dst).append("/$JNAME; ");
+            sb.append("fi; ");
+        }
         sb.append("echo COPIADO_OK");
         return sb.toString();
     }
@@ -38,9 +45,7 @@ public class ShizukuHelper {
             if (target == null) {
                 for (java.lang.reflect.Method m : cls.getDeclaredMethods()) {
                     if (m.getName().equals("newProcess")) {
-                        m.setAccessible(true);
-                        target = m;
-                        break;
+                        m.setAccessible(true); target = m; break;
                     }
                 }
             }
