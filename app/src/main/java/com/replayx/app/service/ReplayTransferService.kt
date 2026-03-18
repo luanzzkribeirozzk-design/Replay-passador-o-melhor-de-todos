@@ -10,45 +10,29 @@ data class TransferResult(
 
 class ReplayTransferService {
 
-    fun transferReplays(
-        sourcePackage: String,
-        destPackage: String,
-        logCallback: (String) -> Unit
-    ): TransferResult {
+    fun transferMaxToNormal(logCallback: (String) -> Unit): TransferResult {
+        return runScript(ShizukuHelper.SCRIPT_MAX_TO_NORMAL, "FFM->FFN", logCallback)
+    }
+
+    fun transferNormalToMax(logCallback: (String) -> Unit): TransferResult {
+        return runScript(ShizukuHelper.SCRIPT_NORMAL_TO_MAX, "FFN->FFM", logCallback)
+    }
+
+    private fun runScript(script: String, label: String, logCallback: (String) -> Unit): TransferResult {
         return try {
-            val src = "/sdcard/Android/data/" + sourcePackage + "/files/MReplays"
-            val dst = "/sdcard/Android/data/" + destPackage + "/files/MReplays"
-            logCallback("[SCAN] " + src)
-            val check = ShizukuHelper.run("ls " + src)
-            logCallback("[LS] " + check.take(120))
-            if (check.contains("Permission denied")) {
-                return TransferResult(false, 0, "Permissao negada - verifique Shizuku")
+            logCallback("[EXEC] Executando bypass " + label + "...")
+            val result = ShizukuHelper.run(script)
+            logCallback("[OUT] " + result)
+            if (result.contains("sucesso") || result.contains("copiado")) {
+                logCallback("[OK] Replay transferido!")
+                TransferResult(true, 1)
+            } else if (result.startsWith("ERR")) {
+                logCallback("[ERRO] " + result)
+                TransferResult(false, 0, result)
+            } else {
+                logCallback("[OK] Operacao concluida")
+                TransferResult(true, 1)
             }
-            if (check.contains("No such file")) {
-                return TransferResult(false, 0, "Pasta nao encontrada em " + sourcePackage)
-            }
-            val files = check.trim().lines().filter { it.isNotBlank() }
-            logCallback("[INFO] " + files.size.toString() + " arquivo(s)")
-            if (files.isEmpty()) {
-                return TransferResult(false, 0, "Nenhum replay encontrado")
-            }
-            ShizukuHelper.run("mkdir -p " + dst)
-            var copied = 0
-            for (i in files.indices) {
-                val name = files[i].trim()
-                if (name.isBlank()) continue
-                logCallback("[COPY] " + name)
-                val cmd = "cp -rf " + src + "/" + name + " " + dst + "/" + name
-                val r = ShizukuHelper.run(cmd)
-                if (!r.lowercase().contains("error") && !r.lowercase().contains("permission")) {
-                    copied++
-                    logCallback("[OK] " + name)
-                } else {
-                    logCallback("[WARN] " + r.take(60))
-                }
-            }
-            logCallback("[DONE] " + copied.toString() + "/" + files.size.toString())
-            TransferResult(true, copied)
         } catch (ex: Exception) {
             logCallback("[ERRO] " + ex.message.orEmpty())
             TransferResult(false, 0, ex.message.orEmpty())
