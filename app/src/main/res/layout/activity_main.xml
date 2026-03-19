@@ -172,7 +172,7 @@
                 android:id="@+id/btnClearLog"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:text="CLR"
+                android:text="Limpar logs"
                 android:textColor="#00FF41"
                 android:textSize="12sp"
                 android:textStyle="bold"
