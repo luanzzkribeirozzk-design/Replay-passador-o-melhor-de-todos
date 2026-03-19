@@ -22,17 +22,13 @@ import java.util.concurrent.Executors;
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
-    private static final String PREFS     = "replayx_prefs";
-    private static final String PREF_KEY  = "saved_key";
-    private static final String PREF_REM  = "remember_key";
-    private static final String PREF_AUTO = "auto_login";
-    private static final String PREF_USER = "auto_user";
-    private static final String PREF_DAYS = "auto_days";
-    private static final String PREF_FIRST= "auto_first";
-    private static final String PREF_STAT = "auto_status";
-    private static final String PREF_PAUS = "auto_paused";
-    private static final String PROJECT   = "principal-6bf6f";
-    private static final String API_KEY   = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
+    private static final String PREFS      = "replayx_prefs";
+    private static final String PREF_KEY   = "saved_key";
+    private static final String PREF_REM   = "remember_key";
+    private static final String PREF_AUTO  = "auto_login";
+    private static final String PREF_KSTR  = "auto_kstr";
+    private static final String PROJECT    = "principal-6bf6f";
+    private static final String API_KEY    = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -44,36 +40,21 @@ public class LoginActivity extends AppCompatActivity {
 
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        // Auto-login: se ja validou antes, entra direto
+        // Auto-login: busca no Firestore para garantir validade real
         if (prefs.getBoolean(PREF_AUTO, false)) {
-            String user   = prefs.getString(PREF_USER, "");
-            int    days   = prefs.getInt(PREF_DAYS, 0);
-            long   first  = prefs.getLong(PREF_FIRST, 0L);
-            String status = prefs.getString(PREF_STAT, "active");
-            long   paused = prefs.getLong(PREF_PAUS, 0L);
-
-            // Verificar se ainda nao expirou localmente
-            long nowSec = System.currentTimeMillis() / 1000L;
-            long usedSec = ("paused".equals(status) && paused > 0)
-                ? (paused - first) : (nowSec - first);
-            long remain = days - (usedSec / 86400L);
-
-            if (remain > 0 && !"paused".equals(status)) {
-                goMain(user, days, first, status, paused);
+            String savedKStr = prefs.getString(PREF_KSTR, "");
+            if (savedKStr != null && !savedKStr.isEmpty()) {
+                setLoading(true);
+                setStatus("Verificando acesso...", 0xFF888888);
+                validateKey(savedKStr, true);
                 return;
-            }
-            // Se expirou ou pausada, mostra tela de login normal
-            if ("paused".equals(status)) {
-                binding.tvError.setText("Key pausada");
-                binding.tvError.setTextColor(0xFFFF4444);
-                binding.tvError.setVisibility(View.VISIBLE);
-            } else {
-                binding.tvError.setText("Key expirada");
-                binding.tvError.setTextColor(0xFFFF4444);
-                binding.tvError.setVisibility(View.VISIBLE);
             }
         }
 
+        setupForm(prefs);
+    }
+
+    private void setupForm(SharedPreferences prefs) {
         boolean rem = prefs.getBoolean(PREF_REM, false);
         String saved = prefs.getString(PREF_KEY, "");
         binding.switchRemember.setChecked(rem);
@@ -90,13 +71,50 @@ public class LoginActivity extends AppCompatActivity {
     private void doLogin() {
         String key = binding.etKey.getText().toString().trim();
         if (key.isEmpty()) { setStatus("[ERR] Insira sua key!", 0xFFFF4444); return; }
-        binding.btnLogin.setEnabled(false);
-        binding.progressBar.setVisibility(View.VISIBLE);
+        setLoading(true);
         setStatus("Validando key...", 0xFF00FF41);
+        validateKey(key, false);
+    }
 
+    private void validateKey(String key, boolean isAutoLogin) {
         String myDev = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         exec.execute(() -> {
             try {
+
+                // ── PASSO 1: Pegar IP público ──
+                String myIP = "";
+                try {
+                    URL ipUrl = new URL("https://api.ipify.org?format=json");
+                    HttpURLConnection ipC = (HttpURLConnection) ipUrl.openConnection();
+                    ipC.setConnectTimeout(6000); ipC.setReadTimeout(6000);
+                    Scanner ipSc = new Scanner(ipC.getInputStream(), "UTF-8");
+                    StringBuilder ipSb = new StringBuilder();
+                    while (ipSc.hasNextLine()) ipSb.append(ipSc.nextLine());
+                    ipSc.close(); ipC.disconnect();
+                    myIP = new JSONObject(ipSb.toString()).optString("ip", "");
+                } catch (Exception ignored) {}
+
+                // ── PASSO 2: Verificar se IP está bloqueado ──
+                if (!myIP.isEmpty()) {
+                    String ipCheckUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                        + "/databases/(default)/documents/blocked_ips/" + myIP
+                        + "?key=" + API_KEY;
+                    URL ipDocUrl = new URL(ipCheckUrl);
+                    HttpURLConnection ipDC = (HttpURLConnection) ipDocUrl.openConnection();
+                    ipDC.setRequestMethod("GET");
+                    ipDC.setConnectTimeout(8000); ipDC.setReadTimeout(8000);
+                    int ipCode = ipDC.getResponseCode();
+                    ipDC.disconnect();
+                    if (ipCode == 200) {
+                        // IP bloqueado — limpa auto-login e bloqueia
+                        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                            .putBoolean(PREF_AUTO, false).apply();
+                        fail("Acesso bloqueado pelo administrador");
+                        return;
+                    }
+                }
+
+                // ── PASSO 3: Buscar key no Firestore ──
                 String runQuery = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents:runQuery?key=" + API_KEY;
                 JSONObject body = new JSONObject();
@@ -118,38 +136,58 @@ public class LoginActivity extends AppCompatActivity {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
-                conn.setConnectTimeout(10000);
-                conn.setReadTimeout(10000);
+                conn.setConnectTimeout(10000); conn.setReadTimeout(10000);
                 OutputStream os = conn.getOutputStream();
-                os.write(body.toString().getBytes("UTF-8"));
-                os.close();
+                os.write(body.toString().getBytes("UTF-8")); os.close();
 
                 Scanner sc = new Scanner(conn.getInputStream(), "UTF-8");
                 StringBuilder sb = new StringBuilder();
                 while (sc.hasNextLine()) sb.append(sc.nextLine());
-                sc.close();
-                conn.disconnect();
+                sc.close(); conn.disconnect();
 
                 JSONArray results = new JSONArray(sb.toString());
+
+                // Key não existe mais no Firebase
                 if (results.length() == 0 || !results.getJSONObject(0).has("document")) {
-                    fail("[ERR] Key invalida"); return;
+                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                        .putBoolean(PREF_AUTO, false).apply();
+                    fail("[ERR] Key invalida ou apagada");
+                    return;
                 }
 
                 JSONObject doc = results.getJSONObject(0).getJSONObject("document");
                 String docName = doc.getString("name");
+                String docId = docName.substring(docName.lastIndexOf("/") + 1);
                 JSONObject fields = doc.getJSONObject("fields");
 
-                String status = fields.has("status") ? fields.getJSONObject("status").optString("stringValue","") : "";
-                if ("paused".equals(status)) { fail("Key pausada"); return; }
-                if (!"active".equals(status)) { fail("[ERR] Key inativa"); return; }
-
-                String devId = fields.has("deviceId") ? fields.getJSONObject("deviceId").optString("stringValue","") : "";
-                boolean noDevice = devId.isEmpty() || "null".equals(devId);
-
-                if (!noDevice && !devId.equals(myDev)) {
-                    fail("[ERR] Key em outro dispositivo"); return;
+                // ── PASSO 4: Verificar status ──
+                String status = fields.has("status")
+                    ? fields.getJSONObject("status").optString("stringValue", "") : "";
+                if ("paused".equals(status)) {
+                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                        .putBoolean(PREF_AUTO, false).apply();
+                    fail("Key pausada");
+                    return;
+                }
+                if (!"active".equals(status)) {
+                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                        .putBoolean(PREF_AUTO, false).apply();
+                    fail("[ERR] Key inativa");
+                    return;
                 }
 
+                // ── PASSO 5: Verificar device ──
+                String devId = fields.has("deviceId")
+                    ? fields.getJSONObject("deviceId").optString("stringValue", "") : "";
+                boolean noDevice = devId.isEmpty() || "null".equals(devId);
+                if (!noDevice && !devId.equals(myDev)) {
+                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                        .putBoolean(PREF_AUTO, false).apply();
+                    fail("[ERR] Key em outro dispositivo");
+                    return;
+                }
+
+                // ── PASSO 6: Carregar dados ──
                 long nowSec = System.currentTimeMillis() / 1000L;
                 long firstSec = nowSec;
                 long pauseSec = 0L;
@@ -160,7 +198,8 @@ public class LoginActivity extends AppCompatActivity {
                     Object dv = fields.getJSONObject("days").opt("integerValue");
                     if (dv != null) days = Integer.parseInt(dv.toString());
                 }
-                if (fields.has("user")) user = fields.getJSONObject("user").optString("stringValue","");
+                if (fields.has("user"))
+                    user = fields.getJSONObject("user").optString("stringValue", "");
                 if (fields.has("firstUsed") && fields.getJSONObject("firstUsed").has("timestampValue")) {
                     String ts = fields.getJSONObject("firstUsed").getString("timestampValue");
                     firstSec = java.time.Instant.parse(ts).getEpochSecond();
@@ -170,109 +209,87 @@ public class LoginActivity extends AppCompatActivity {
                     pauseSec = java.time.Instant.parse(ts).getEpochSecond();
                 }
 
+                // ── PASSO 7: Verificar expiração ──
                 if (fields.has("firstUsed")) {
                     long usedSec = ("paused".equals(status) && pauseSec > 0)
                         ? (pauseSec - firstSec) : (nowSec - firstSec);
-                    if (days - (usedSec / 86400L) <= 0) { fail("Key expirada"); return; }
+                    long remain = days - (usedSec / 86400L);
+                    if (remain <= 0) {
+                        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                            .putBoolean(PREF_AUTO, false).apply();
+                        fail("Key expirada");
+                        return;
+                    }
                 }
 
-                // Registrar primeiro uso
+                // ── PASSO 8: Registrar device e IP (primeiro uso) ──
+                String patchMask = noDevice
+                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
+                    : "?updateMask.fieldPaths=lastIP&key=" + API_KEY;
+                String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                    + "/databases/(default)/documents/keys/" + docId + patchMask;
+                JSONObject pf = new JSONObject();
                 if (noDevice) {
-                    String docId = docName.substring(docName.lastIndexOf("/") + 1);
-                    String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
-                        + "/databases/(default)/documents/keys/" + docId
-                        + "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&key=" + API_KEY;
-                    JSONObject patch = new JSONObject();
-                    JSONObject pf = new JSONObject();
-                    // Pegar IP público do usuário
-                    String userIP = "";
-                    try {
-                        java.net.URL ipUrl = new java.net.URL("https://api.ipify.org?format=json");
-                        java.net.HttpURLConnection ipConn = (java.net.HttpURLConnection) ipUrl.openConnection();
-                        ipConn.setConnectTimeout(5000); ipConn.setReadTimeout(5000);
-                        java.util.Scanner ipSc = new java.util.Scanner(ipConn.getInputStream(), "UTF-8");
-                        StringBuilder ipSb = new StringBuilder();
-                        while (ipSc.hasNextLine()) ipSb.append(ipSc.nextLine());
-                        ipSc.close(); ipConn.disconnect();
-                        userIP = new org.json.JSONObject(ipSb.toString()).optString("ip", "");
-                    } catch (Exception ignored) {}
-
-                    String patchUrl2 = "https://firestore.googleapis.com/v1/projects/" + PROJECT
-                        + "/databases/(default)/documents/keys/" + docId
-                        + "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY;
                     pf.put("deviceId", new JSONObject().put("stringValue", myDev));
-                    pf.put("firstUsed", new JSONObject().put("timestampValue", java.time.Instant.ofEpochSecond(nowSec).toString()));
-                    if (!userIP.isEmpty()) pf.put("lastIP", new JSONObject().put("stringValue", userIP));
-                    patch.put("fields", pf);
-                    URL pUrl = new URL(patchUrl2);
+                    pf.put("firstUsed", new JSONObject().put("timestampValue",
+                        java.time.Instant.ofEpochSecond(nowSec).toString()));
+                    firstSec = nowSec;
+                }
+                if (!myIP.isEmpty())
+                    pf.put("lastIP", new JSONObject().put("stringValue", myIP));
+                if (pf.length() > 0) {
+                    JSONObject patchBody = new JSONObject();
+                    patchBody.put("fields", pf);
+                    URL pUrl = new URL(patchUrl);
                     HttpURLConnection pc = (HttpURLConnection) pUrl.openConnection();
                     pc.setRequestMethod("PATCH");
                     pc.setRequestProperty("Content-Type", "application/json");
                     pc.setDoOutput(true);
                     pc.setConnectTimeout(10000);
-                    pc.getOutputStream().write(patch.toString().getBytes("UTF-8"));
+                    pc.getOutputStream().write(patchBody.toString().getBytes("UTF-8"));
                     pc.getResponseCode();
                     pc.disconnect();
-                    firstSec = nowSec;
-                } else {
-                    // Atualizar IP no login recorrente
-                    try {
-                        java.net.URL ipUrl2 = new java.net.URL("https://api.ipify.org?format=json");
-                        java.net.HttpURLConnection ic = (java.net.HttpURLConnection) ipUrl2.openConnection();
-                        ic.setConnectTimeout(5000); ic.setReadTimeout(5000);
-                        java.util.Scanner isc = new java.util.Scanner(ic.getInputStream(), "UTF-8");
-                        StringBuilder isb = new StringBuilder();
-                        while (isc.hasNextLine()) isb.append(isc.nextLine());
-                        isc.close(); ic.disconnect();
-                        String ipNow = new org.json.JSONObject(isb.toString()).optString("ip","");
-                        if (!ipNow.isEmpty()) {
-                            String docId2 = docName.substring(docName.lastIndexOf("/") + 1);
-                            String upUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
-                                + "/databases/(default)/documents/keys/" + docId2
-                                + "?updateMask.fieldPaths=lastIP&key=" + API_KEY;
-                            JSONObject upBody = new JSONObject();
-                            JSONObject upFields = new JSONObject();
-                            upFields.put("lastIP", new JSONObject().put("stringValue", ipNow));
-                            upBody.put("fields", upFields);
-                            java.net.URL upU = new java.net.URL(upUrl);
-                            HttpURLConnection upC = (HttpURLConnection) upU.openConnection();
-                            upC.setRequestMethod("PATCH");
-                            upC.setRequestProperty("Content-Type", "application/json");
-                            upC.setDoOutput(true);
-                            upC.setConnectTimeout(8000);
-                            upC.getOutputStream().write(upBody.toString().getBytes("UTF-8"));
-                            upC.getResponseCode();
-                            upC.disconnect();
-                        }
-                    } catch (Exception ignored2) {}
                 }
 
+                // ── PASSO 9: Sucesso — salvar e entrar ──
                 final long fFirst = firstSec, fPause = pauseSec;
                 final int fDays = days;
-                final String fUser = user, fStatus = status;
+                final String fUser = user, fStatus = status, fKey = key;
 
-                main.post(() -> setStatus("Key validada com sucesso!", 0xFF00FF41));
-                Thread.sleep(1200);
+                if (!isAutoLogin) {
+                    main.post(() -> setStatus("Key validada com sucesso!", 0xFF00FF41));
+                    Thread.sleep(1200);
+                }
+
                 main.post(() -> {
                     binding.progressBar.setVisibility(View.GONE);
-                    boolean remember = binding.switchRemember.isChecked();
-                    String keyStr = binding.etKey.getText().toString().trim();
-                    // Salvar tudo para auto-login futuro
-                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                        .putBoolean(PREF_REM, remember)
-                        .putString(PREF_KEY, remember ? keyStr : "")
-                        .putBoolean(PREF_AUTO, true)
-                        .putString(PREF_USER, fUser)
-                        .putInt(PREF_DAYS, fDays)
-                        .putLong(PREF_FIRST, fFirst)
-                        .putString(PREF_STAT, fStatus)
-                        .putLong(PREF_PAUS, fPause)
-                        .apply();
+                    SharedPreferences p = getSharedPreferences(PREFS, MODE_PRIVATE);
+                    boolean remember = isAutoLogin
+                        ? p.getBoolean(PREF_REM, false)
+                        : binding.switchRemember.isChecked();
+                    SharedPreferences.Editor ed = p.edit();
+                    ed.putBoolean(PREF_AUTO, true);
+                    ed.putString(PREF_KSTR, fKey);
+                    if (!isAutoLogin) {
+                        ed.putBoolean(PREF_REM, remember);
+                        ed.putString(PREF_KEY, remember ? fKey : "");
+                    }
+                    ed.apply();
                     goMain(fUser, fDays, fFirst, fStatus, fPause);
                 });
 
             } catch (Exception e) {
-                main.post(() -> fail("[ERR] " + e.getMessage()));
+                main.post(() -> {
+                    if (isAutoLogin) {
+                        // Falha de rede no auto-login: mostrar tela normal
+                        setLoading(false);
+                        setStatus("", 0xFF888888);
+                        SharedPreferences pp = getSharedPreferences(PREFS, MODE_PRIVATE);
+                        setupForm(pp);
+                    } else {
+                        fail("[ERR] " + e.getMessage());
+                    }
+                });
             }
         });
     }
@@ -290,16 +307,20 @@ public class LoginActivity extends AppCompatActivity {
 
     private void fail(String msg) {
         main.post(() -> {
-            binding.progressBar.setVisibility(View.GONE);
-            binding.btnLogin.setEnabled(true);
+            setLoading(false);
             setStatus(msg, 0xFFFF4444);
         });
+    }
+
+    private void setLoading(boolean on) {
+        binding.progressBar.setVisibility(on ? View.VISIBLE : View.GONE);
+        binding.btnLogin.setEnabled(!on);
     }
 
     private void setStatus(String msg, int color) {
         binding.tvError.setText(msg);
         binding.tvError.setTextColor(color);
-        binding.tvError.setVisibility(View.VISIBLE);
+        binding.tvError.setVisibility(msg.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
     @Override
