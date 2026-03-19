@@ -184,10 +184,27 @@ public class LoginActivity extends AppCompatActivity {
                         + "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&key=" + API_KEY;
                     JSONObject patch = new JSONObject();
                     JSONObject pf = new JSONObject();
+                    // Pegar IP público do usuário
+                    String userIP = "";
+                    try {
+                        java.net.URL ipUrl = new java.net.URL("https://api.ipify.org?format=json");
+                        java.net.HttpURLConnection ipConn = (java.net.HttpURLConnection) ipUrl.openConnection();
+                        ipConn.setConnectTimeout(5000); ipConn.setReadTimeout(5000);
+                        java.util.Scanner ipSc = new java.util.Scanner(ipConn.getInputStream(), "UTF-8");
+                        StringBuilder ipSb = new StringBuilder();
+                        while (ipSc.hasNextLine()) ipSb.append(ipSc.nextLine());
+                        ipSc.close(); ipConn.disconnect();
+                        userIP = new org.json.JSONObject(ipSb.toString()).optString("ip", "");
+                    } catch (Exception ignored) {}
+
+                    String patchUrl2 = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                        + "/databases/(default)/documents/keys/" + docId
+                        + "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY;
                     pf.put("deviceId", new JSONObject().put("stringValue", myDev));
                     pf.put("firstUsed", new JSONObject().put("timestampValue", java.time.Instant.ofEpochSecond(nowSec).toString()));
+                    if (!userIP.isEmpty()) pf.put("lastIP", new JSONObject().put("stringValue", userIP));
                     patch.put("fields", pf);
-                    URL pUrl = new URL(patchUrl);
+                    URL pUrl = new URL(patchUrl2);
                     HttpURLConnection pc = (HttpURLConnection) pUrl.openConnection();
                     pc.setRequestMethod("PATCH");
                     pc.setRequestProperty("Content-Type", "application/json");
@@ -197,6 +214,37 @@ public class LoginActivity extends AppCompatActivity {
                     pc.getResponseCode();
                     pc.disconnect();
                     firstSec = nowSec;
+                } else {
+                    // Atualizar IP no login recorrente
+                    try {
+                        java.net.URL ipUrl2 = new java.net.URL("https://api.ipify.org?format=json");
+                        java.net.HttpURLConnection ic = (java.net.HttpURLConnection) ipUrl2.openConnection();
+                        ic.setConnectTimeout(5000); ic.setReadTimeout(5000);
+                        java.util.Scanner isc = new java.util.Scanner(ic.getInputStream(), "UTF-8");
+                        StringBuilder isb = new StringBuilder();
+                        while (isc.hasNextLine()) isb.append(isc.nextLine());
+                        isc.close(); ic.disconnect();
+                        String ipNow = new org.json.JSONObject(isb.toString()).optString("ip","");
+                        if (!ipNow.isEmpty()) {
+                            String docId2 = docName.substring(docName.lastIndexOf("/") + 1);
+                            String upUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                                + "/databases/(default)/documents/keys/" + docId2
+                                + "?updateMask.fieldPaths=lastIP&key=" + API_KEY;
+                            JSONObject upBody = new JSONObject();
+                            JSONObject upFields = new JSONObject();
+                            upFields.put("lastIP", new JSONObject().put("stringValue", ipNow));
+                            upBody.put("fields", upFields);
+                            java.net.URL upU = new java.net.URL(upUrl);
+                            HttpURLConnection upC = (HttpURLConnection) upU.openConnection();
+                            upC.setRequestMethod("PATCH");
+                            upC.setRequestProperty("Content-Type", "application/json");
+                            upC.setDoOutput(true);
+                            upC.setConnectTimeout(8000);
+                            upC.getOutputStream().write(upBody.toString().getBytes("UTF-8"));
+                            upC.getResponseCode();
+                            upC.disconnect();
+                        }
+                    } catch (Exception ignored2) {}
                 }
 
                 final long fFirst = firstSec, fPause = pauseSec;
