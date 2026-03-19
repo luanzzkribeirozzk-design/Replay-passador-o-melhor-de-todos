@@ -28,7 +28,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PASSADOR DE"
+                android:text="AMAIA MODZ -"
                 android:textColor="#005500"
                 android:textSize="11sp"
                 android:letterSpacing="0.4"
@@ -37,7 +37,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REPLAY X"
+                android:text="REPLAY"
                 android:textColor="#00FF41"
                 android:textSize="36sp"
                 android:textStyle="bold" />
@@ -275,7 +275,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REPLAY X  ·  FREE FIRE BYPASS SYSTEM"
+                android:text="By: AMAIA"
                 android:textColor="#003300"
                 android:textSize="9sp" />
 
