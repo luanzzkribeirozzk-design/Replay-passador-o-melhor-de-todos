@@ -7,12 +7,16 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:364113395086:android:replayx001",
+        "mobilesdk_app_id": "1:364113395086:android:67fa03ff1ffcdb160338df",
         "android_client_info": {
           "package_name": "com.replayx.app"
         }
       },
-      "api_key": [{"current_key": "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc"}],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc"
+        }
+      ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": []
