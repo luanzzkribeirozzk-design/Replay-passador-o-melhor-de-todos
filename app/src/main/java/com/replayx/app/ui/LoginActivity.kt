@@ -7,14 +7,14 @@ import android.provider.Settings
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
+import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FirebaseFirestore
 import com.replayx.app.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-    private val db by lazy { Firebase.firestore }
+    private val db: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     private val PREFS = "replayx_prefs"
     private val PREF_KEY = "saved_key"
     private val PREF_REMEMBER = "remember_key"
@@ -27,10 +27,10 @@ class LoginActivity : AppCompatActivity() {
 
         val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
         val remember = prefs.getBoolean(PREF_REMEMBER, false)
-        val savedKey = prefs.getString(PREF_KEY, "")
+        val savedKey = prefs.getString(PREF_KEY, "") ?: ""
 
         binding.switchRemember.isChecked = remember
-        if (remember && !savedKey.isNullOrEmpty()) {
+        if (remember && savedKey.isNotEmpty()) {
             binding.etKey.setText(savedKey)
         }
 
@@ -42,91 +42,89 @@ class LoginActivity : AppCompatActivity() {
 
     private fun doLogin() {
         val key = binding.etKey.text.toString().trim()
-        if (key.isEmpty()) { showError("Insira sua key!"); return }
+        if (key.isEmpty()) { showError("[ERR] Insira sua key!"); return }
 
         setLoading(true)
         hideError()
 
-        // Buscar key no Firestore
         db.collection("keys")
             .whereEqualTo("keyString", key)
             .get()
             .addOnSuccessListener { docs ->
                 setLoading(false)
-                if (docs.isEmpty) { showError("[ERR] Key invalida"); return@addOnSuccessListener }
+                if (docs.isEmpty) {
+                    showError("[ERR] Key invalida")
+                    return@addOnSuccessListener
+                }
                 val doc = docs.documents[0]
-                val data = doc.data ?: run { showError("[ERR] Dados corrompidos"); return@addOnSuccessListener }
+                val data = doc.data
+                if (data == null) {
+                    showError("[ERR] Dados invalidos")
+                    return@addOnSuccessListener
+                }
 
                 val status = data["status"] as? String ?: ""
                 if (status == "paused") { showError("[ERR] Key pausada"); return@addOnSuccessListener }
                 if (status != "active") { showError("[ERR] Key inativa"); return@addOnSuccessListener }
 
                 val deviceId = data["deviceId"] as? String
-                val myDeviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
+                val myDevice = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
 
-                if (deviceId != null && deviceId != myDeviceId) {
-                    showError("[ERR] Key ja usada em outro dispositivo")
+                if (deviceId != null && deviceId != myDevice) {
+                    showError("[ERR] Key em uso em outro dispositivo")
                     return@addOnSuccessListener
                 }
 
-                // Primeiro uso - registrar device e firstUsed
                 if (deviceId == null) {
-                    val now = com.google.firebase.Timestamp.now()
-                    doc.reference.update(
-                        mapOf("deviceId" to myDeviceId, "firstUsed" to now)
-                    ).addOnSuccessListener {
-                        onLoginSuccess(doc.id, data, myDeviceId)
-                    }
+                    val now = Timestamp.now()
+                    doc.reference.update(mapOf("deviceId" to myDevice, "firstUsed" to now))
+                        .addOnSuccessListener { proceedLogin(doc.id, data, myDevice) }
+                        .addOnFailureListener { e -> showError("[ERR] " + e.message) }
                 } else {
-                    onLoginSuccess(doc.id, data, myDeviceId)
+                    proceedLogin(doc.id, data, myDevice)
                 }
             }
             .addOnFailureListener { e ->
                 setLoading(false)
-                showError("[ERR] " + e.message)
+                showError("[ERR] " + (e.message ?: "Falha de conexao"))
             }
     }
 
-    private fun onLoginSuccess(docId: String, data: Map<String, Any>, deviceId: String) {
-        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
-        val remember = binding.switchRemember.isChecked
-        val key = binding.etKey.text.toString().trim()
-        prefs.edit()
-            .putBoolean(PREF_REMEMBER, remember)
-            .putString(PREF_KEY, if (remember) key else "")
-            .putString("key_doc_id", docId)
-            .putString("key_device_id", deviceId)
-            .apply()
-
-        // Verificar se expirou
+    private fun proceedLogin(docId: String, data: Map<String, Any>, myDevice: String) {
         val days = (data["days"] as? Long)?.toInt() ?: 0
-        val firstUsed = data["firstUsed"] as? com.google.firebase.Timestamp
-        val pausedAt = data["pausedAt"] as? com.google.firebase.Timestamp
+        val firstUsedTs = data["firstUsed"] as? Timestamp
+        val pausedAtTs = data["pausedAt"] as? Timestamp
         val status = data["status"] as? String ?: "active"
+        val user = data["user"] as? String ?: ""
 
-        if (firstUsed != null) {
-            val nowSec = System.currentTimeMillis() / 1000
-            val usedSec = if (status == "paused" && pausedAt != null)
-                pausedAt.seconds - firstUsed.seconds
+        // Verificar expiracao
+        if (firstUsedTs != null) {
+            val nowSec = System.currentTimeMillis() / 1000L
+            val usedSec = if (status == "paused" && pausedAtTs != null)
+                pausedAtTs.seconds - firstUsedTs.seconds
             else
-                nowSec - firstUsed.seconds
-            val remainDays = days - (usedSec / 86400).toInt()
+                nowSec - firstUsedTs.seconds
+            val remainDays = days - (usedSec / 86400L).toInt()
             if (remainDays <= 0) {
                 showError("[ERR] Key expirada")
+                setLoading(false)
                 return
             }
         }
 
-        val user = data["user"] as? String ?: ""
-        val firstUsedTs = data["firstUsed"] as? com.google.firebase.Timestamp
+        val key = binding.etKey.text.toString().trim()
+        val remember = binding.switchRemember.isChecked
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+            .putBoolean(PREF_REMEMBER, remember)
+            .putString(PREF_KEY, if (remember) key else "")
+            .apply()
 
-        // Mostrar timer e ir para MainActivity
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("key_user", user)
         intent.putExtra("key_days", days)
-        intent.putExtra("key_first_used_sec", firstUsedTs?.seconds ?: (System.currentTimeMillis() / 1000))
+        intent.putExtra("key_first_used_sec", firstUsedTs?.seconds ?: (System.currentTimeMillis() / 1000L))
         intent.putExtra("key_status", status)
-        intent.putExtra("key_paused_at_sec", (pausedAt?.seconds ?: 0L))
+        intent.putExtra("key_paused_at_sec", pausedAtTs?.seconds ?: 0L)
         startActivity(intent)
         finish()
     }
