@@ -57,7 +57,18 @@ public class LoginActivity extends AppCompatActivity {
         setupForm(prefs);
     }
 
+    private void hideSplash() {
+        android.view.View splash = binding.splashScreen;
+        if (splash == null) return;
+        splash.animate()
+            .alpha(0f)
+            .setDuration(300)
+            .withEndAction(() -> splash.setVisibility(android.view.View.GONE))
+            .start();
+    }
+
     private void setupForm(SharedPreferences prefs) {
+        hideSplash();
         boolean rem = prefs.getBoolean(PREF_REM, false);
         String saved = prefs.getString(PREF_KEY, "");
         binding.switchRemember.setChecked(rem);
@@ -317,6 +328,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void fail(String msg) {
         main.post(() -> {
+            hideSplash();
             setLoading(false);
             setStatus(msg, 0xFFFF4444);
         });
