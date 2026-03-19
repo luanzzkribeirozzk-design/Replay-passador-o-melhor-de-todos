@@ -1,7 +1,9 @@
 package com.replayx.app.ui
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.speech.tts.TextToSpeech
 import android.view.View
 import android.view.WindowManager
@@ -30,24 +32,36 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private var tts: TextToSpeech? = null
     private var ttsReady = false
     private var bypassCount = 0
+    private var countDownTimer: CountDownTimer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         tts = TextToSpeech(this, this)
+
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         bypassCount = prefs.getInt(PREF_COUNT, 0)
         val hideActive = prefs.getBoolean(PREF_HIDE, false)
         applyHideStream(hideActive)
         binding.switchHideStream.isChecked = hideActive
         updateHideStreamUI(hideActive)
+
         binding.switchHideStream.setOnCheckedChangeListener { _, isChecked ->
             applyHideStream(isChecked)
             updateHideStreamUI(isChecked)
             prefs.edit().putBoolean(PREF_HIDE, isChecked).apply()
             log(if (isChecked) "[SYS] >> HIDE_STREAM: ENABLED" else "[SYS] >> HIDE_STREAM: DISABLED")
         }
+
+        // Iniciar timer da key
+        val keyUser = intent.getStringExtra("key_user") ?: ""
+        val keyDays = intent.getIntExtra("key_days", 0)
+        val firstUsedSec = intent.getLongExtra("key_first_used_sec", System.currentTimeMillis() / 1000)
+        val keyStatus = intent.getStringExtra("key_status") ?: "active"
+        val pausedAtSec = intent.getLongExtra("key_paused_at_sec", 0L)
+        startKeyTimer(keyUser, keyDays, firstUsedSec, keyStatus, pausedAtSec)
+
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
@@ -57,6 +71,57 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             if (checkShizuku()) { speak("Bypass activated"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
+    }
+
+    private fun startKeyTimer(user: String, days: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
+        val totalMs = days * 86400L * 1000L
+        val usedMs = if (status == "paused" && pausedAtSec > 0)
+            (pausedAtSec - firstUsedSec) * 1000L
+        else
+            System.currentTimeMillis() - firstUsedSec * 1000L
+        var remainMs = totalMs - usedMs
+        if (remainMs < 0) remainMs = 0
+
+        binding.tvKeyInfo.text = "KEY: " + user
+        binding.tvKeyInfo.visibility = View.VISIBLE
+
+        if (status == "paused") {
+            binding.tvTimer.text = formatTime(remainMs)
+            binding.tvTimer.setTextColor(0xFFFFD700.toInt())
+            return
+        }
+
+        countDownTimer?.cancel()
+        countDownTimer = object : CountDownTimer(remainMs, 1000) {
+            override fun onTick(ms: Long) {
+                binding.tvTimer.text = formatTime(ms)
+                binding.tvTimer.setTextColor(
+                    when {
+                        ms < 86400000 -> 0xFFFF4444.toInt()
+                        ms < 259200000 -> 0xFFFFD700.toInt()
+                        else -> 0xFF00FF41.toInt()
+                    }
+                )
+            }
+            override fun onFinish() {
+                binding.tvTimer.text = "KEY EXPIRADA"
+                binding.tvTimer.setTextColor(0xFFFF4444.toInt())
+                // Voltar para login
+                val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                prefs.edit().remove("saved_key").apply()
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                finish()
+            }
+        }.start()
+    }
+
+    private fun formatTime(ms: Long): String {
+        val s = ms / 1000
+        val d = s / 86400
+        val h = (s % 86400) / 3600
+        val m = (s % 3600) / 60
+        val sec = s % 60
+        return String.format("%02dd %02dh %02dm %02ds", d, h, m, sec)
     }
 
     override fun onInit(status: Int) {
@@ -139,6 +204,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     override fun onDestroy() {
         super.onDestroy()
+        countDownTimer?.cancel()
         tts?.stop(); tts?.shutdown()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
