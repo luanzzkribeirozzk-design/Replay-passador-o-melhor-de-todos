@@ -1,0 +1,24 @@
+{
+  "project_info": {
+    "project_number": "364113395086",
+    "project_id": "principal-6bf6f",
+    "storage_bucket": "principal-6bf6f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364113395086:android:replayx001",
+        "android_client_info": {
+          "package_name": "com.replayx.app"
+        }
+      },
+      "api_key": [{"current_key": "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc"}],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
