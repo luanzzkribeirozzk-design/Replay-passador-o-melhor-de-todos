@@ -54,10 +54,9 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             log(if (isChecked) "[SYS] >> HIDE_STREAM: ENABLED" else "[SYS] >> HIDE_STREAM: DISABLED")
         }
 
-        // Iniciar timer da key
         val keyUser = intent.getStringExtra("key_user") ?: ""
         val keyDays = intent.getIntExtra("key_days", 0)
-        val firstUsedSec = intent.getLongExtra("key_first_used_sec", System.currentTimeMillis() / 1000)
+        val firstUsedSec = intent.getLongExtra("key_first_used_sec", System.currentTimeMillis() / 1000L)
         val keyStatus = intent.getStringExtra("key_status") ?: "active"
         val pausedAtSec = intent.getLongExtra("key_paused_at_sec", 0L)
         startKeyTimer(keyUser, keyDays, firstUsedSec, keyStatus, pausedAtSec)
@@ -75,12 +74,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun startKeyTimer(user: String, days: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
         val totalMs = days * 86400L * 1000L
-        val usedMs = if (status == "paused" && pausedAtSec > 0)
+        val usedMs = if (status == "paused" && pausedAtSec > 0L)
             (pausedAtSec - firstUsedSec) * 1000L
         else
             System.currentTimeMillis() - firstUsedSec * 1000L
         var remainMs = totalMs - usedMs
-        if (remainMs < 0) remainMs = 0
+        if (remainMs < 0L) remainMs = 0L
 
         binding.tvKeyInfo.text = "KEY: " + user
         binding.tvKeyInfo.visibility = View.VISIBLE
@@ -92,23 +91,19 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
 
         countDownTimer?.cancel()
-        countDownTimer = object : CountDownTimer(remainMs, 1000) {
+        countDownTimer = object : CountDownTimer(remainMs, 1000L) {
             override fun onTick(ms: Long) {
                 binding.tvTimer.text = formatTime(ms)
-                binding.tvTimer.setTextColor(
-                    when {
-                        ms < 86400000 -> 0xFFFF4444.toInt()
-                        ms < 259200000 -> 0xFFFFD700.toInt()
-                        else -> 0xFF00FF41.toInt()
-                    }
-                )
+                binding.tvTimer.setTextColor(when {
+                    ms < 86400000L -> 0xFFFF4444.toInt()
+                    ms < 259200000L -> 0xFFFFD700.toInt()
+                    else -> 0xFF00FF41.toInt()
+                })
             }
             override fun onFinish() {
                 binding.tvTimer.text = "KEY EXPIRADA"
                 binding.tvTimer.setTextColor(0xFFFF4444.toInt())
-                // Voltar para login
-                val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-                prefs.edit().remove("saved_key").apply()
+                getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().remove("saved_key").apply()
                 startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                 finish()
             }
@@ -116,11 +111,11 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     }
 
     private fun formatTime(ms: Long): String {
-        val s = ms / 1000
-        val d = s / 86400
-        val h = (s % 86400) / 3600
-        val m = (s % 3600) / 60
-        val sec = s % 60
+        val s = ms / 1000L
+        val d = s / 86400L
+        val h = (s % 86400L) / 3600L
+        val m = (s % 3600L) / 60L
+        val sec = s % 60L
         return String.format("%02dd %02dh %02dm %02ds", d, h, m, sec)
     }
 
@@ -205,7 +200,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     override fun onDestroy() {
         super.onDestroy()
         countDownTimer?.cancel()
-        tts?.stop(); tts?.shutdown()
+        tts?.stop()
+        tts?.shutdown()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
     }
