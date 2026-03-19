@@ -215,11 +215,21 @@ public class LoginActivity extends AppCompatActivity {
                     ? fields.getJSONObject("deviceId").optString("stringValue", "") : "";
                 boolean noDevice = devId.isEmpty() || "null".equals(devId);
                 if (!noDevice && !devId.equals(myDev)) {
-                    getSharedPreferences(PREFS, MODE_PRIVATE).edit()
-                        .putBoolean(PREF_AUTO, false).apply();
-                    saveAttempt(key, "Key em outro dispositivo", myIP, deviceModel);
-                    fail("[ERR] Key em outro dispositivo");
-                    return;
+                    // Device mudou — verificar se IP bate como fallback
+                    String savedIP = fields.has("lastIP")
+                        ? fields.getJSONObject("lastIP").optString("stringValue", "") : "";
+                    boolean sameIP = !myIP.isEmpty() && !savedIP.isEmpty() && myIP.equals(savedIP);
+                    if (sameIP) {
+                        // Mesmo IP — atualizar device ID silenciosamente
+                        noDevice = false; // vai cair no bloco de atualizar IP abaixo
+                        devId = myDev;    // aceita o novo device
+                    } else {
+                        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                            .putBoolean(PREF_AUTO, false).apply();
+                        saveAttempt(key, "Key em outro dispositivo", myIP, deviceModel);
+                        fail("[ERR] Key em outro dispositivo");
+                        return;
+                    }
                 }
 
                 // ── PASSO 6: Carregar dados ──
@@ -258,15 +268,22 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 }
 
-                // ── PASSO 8: Registrar device e IP (primeiro uso) ──
+                // ── PASSO 8: Registrar device e IP ──
+                // noDevice = true: primeiro uso
+                // devId == myDev mas pode ter mudado via fallback de IP
+                boolean deviceChanged = !noDevice && !fields.has("deviceId") == false
+                    && fields.has("deviceId")
+                    && !fields.getJSONObject("deviceId").optString("stringValue","").equals(myDev);
+
                 String patchMask = noDevice
                     ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
-                    : "?updateMask.fieldPaths=lastIP&key=" + API_KEY;
+                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&key=" + API_KEY;
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents/keys/" + docId + patchMask;
                 JSONObject pf = new JSONObject();
+                // Sempre salvar device ID atual (atualiza se mudou via fallback IP)
+                pf.put("deviceId", new JSONObject().put("stringValue", myDev));
                 if (noDevice) {
-                    pf.put("deviceId", new JSONObject().put("stringValue", myDev));
                     pf.put("firstUsed", new JSONObject().put("timestampValue",
                         java.time.Instant.ofEpochSecond(nowSec).toString()));
                     firstSec = nowSec;
