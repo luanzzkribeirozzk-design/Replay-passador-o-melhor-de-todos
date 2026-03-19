@@ -41,6 +41,16 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        // Switch Hide Stream na tela de login
+        SharedPreferences prefs2 = getSharedPreferences(PREFS, MODE_PRIVATE);
+        boolean hideOn = prefs2.getBoolean("hide_stream", true);
+        binding.switchHideStreamLogin.setChecked(hideOn);
+        applyHideStream(hideOn);
+        binding.switchHideStreamLogin.setOnCheckedChangeListener((v, checked) -> {
+            applyHideStream(checked);
+            getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean("hide_stream", checked).apply();
+        });
+
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
         // Auto-login: busca no Firestore para garantir validade real
@@ -55,6 +65,11 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         setupForm(prefs);
+    }
+
+    private void applyHideStream(boolean active) {
+        if (active) getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
+        else getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     private void hideSplash() {
