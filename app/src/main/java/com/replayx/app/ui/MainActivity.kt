@@ -81,7 +81,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         var remainMs = totalMs - usedMs
         if (remainMs < 0L) remainMs = 0L
 
-        binding.tvKeyInfo.text = "KEY: " + user
+        binding.tvKeyInfo.text = "KEY: $user"
         binding.tvKeyInfo.visibility = View.VISIBLE
 
         if (status == "paused") {
@@ -178,7 +178,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         val t = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date())
         val cur = binding.tvLog.text.toString()
         val sep = System.lineSeparator()
-        val next = if (cur.isEmpty()) "[" + t + "] " + msg else cur + sep + "[" + t + "] " + msg
+        val next = if (cur.isEmpty()) "[$t] $msg" else "$cur$sep[$t] $msg"
         binding.tvLog.text = next
         binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
     }
