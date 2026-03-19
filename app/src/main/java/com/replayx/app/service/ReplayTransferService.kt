@@ -7,57 +7,51 @@ data class TransferResult(val success: Boolean, val filesCopied: Int = 0, val er
 class ReplayTransferService {
 
     fun transferMaxToNormal(count: Int, log: (String) -> Unit): TransferResult {
-        log("[SYS] >> BYPASS_MODULE_LOAD 0x01")
-        log("[SYS] >> PROC_INIT... OK")
-        log("[MEM] >> ALLOC 4096B... OK")
-        log("[SYS] >> SRC_MOUNT... OK")
-        log("[SYS] >> DST_MOUNT... OK")
-        log("[SYS] >> SCAN_BINARIES... OK")
-        log("[CMD] >> exec bin/transfer --mode=0x01")
-        log("[SYS] >> CHECKSUM_VERIFY... OK")
+        log("[0x01] initializing module...")
+        log("[0x02] allocating memory buffer...")
+        log("[0x03] mounting partitions...")
+        log("[0x04] scanning binary index...")
+        log("[0x05] executing transfer engine...")
+        log("[0x06] verifying checksum...")
         val r = ShizukuHelper.runMaxToNormal()
-        // Mostrar JSON no log para debug
-        val lines = r.split("\n")
-        for (line in lines) {
-            if (line.isNotBlank()) log("[DBG] " + line.take(60))
-        }
+        log("[0x07] writing output stream...")
         return if (r.contains("COPIADO_OK")) {
-            log("[SYS] >> CHMOD_APPLY... OK")
-            log("[SYS] >> STATUS: 0x00 SUCCESS")
-            log("[SYS] >> TOTAL_BYPASS_COUNT: $count")
-            log("[SYS] >> Bypass activated 0xAC")
+            log("[0x08] applying permissions...")
+            log("[0x09] flushing cache...")
+            log("[0x0A] bypass_count=$count")
+            log("[0xFF] Bypass activated")
+            log("[0x00] successful")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
-            log("[WRN] >> STATUS: 0x01 EMPTY")
+            log("[0xE1] source empty")
             TransferResult(false, 0, "EMPTY")
         } else {
-            log("[ERR] >> STATUS: 0xFF FAIL")
+            log("[0xEE] transfer failed")
             TransferResult(false, 0, r)
         }
     }
 
     fun transferNormalToMax(count: Int, log: (String) -> Unit): TransferResult {
-        log("[SYS] >> BYPASS_MODULE_LOAD 0x02")
-        log("[SYS] >> PROC_INIT... OK")
-        log("[MEM] >> ALLOC 4096B... OK")
-        log("[SYS] >> SRC_MOUNT... OK")
-        log("[SYS] >> DST_MOUNT... OK")
-        log("[SYS] >> SCAN_BINARIES... OK")
-        log("[CMD] >> exec bin/transfer --mode=0x02")
-        log("[SYS] >> CHECKSUM_VERIFY... OK")
+        log("[0x01] initializing module...")
+        log("[0x02] allocating memory buffer...")
+        log("[0x03] mounting partitions...")
+        log("[0x04] scanning binary index...")
+        log("[0x05] executing transfer engine...")
+        log("[0x06] verifying checksum...")
         val r = ShizukuHelper.runNormalToMax()
-        log("[SYS] >> IO_WRITE... OK")
+        log("[0x07] writing output stream...")
         return if (r.contains("COPIADO_OK")) {
-            log("[SYS] >> CHMOD_APPLY... OK")
-            log("[SYS] >> STATUS: 0x00 SUCCESS")
-            log("[SYS] >> TOTAL_BYPASS_COUNT: $count")
-            log("[SYS] >> Bypass activated 0xAC")
+            log("[0x08] applying permissions...")
+            log("[0x09] flushing cache...")
+            log("[0x0A] bypass_count=$count")
+            log("[0xFF] Bypass activated")
+            log("[0x00] successful")
             TransferResult(true, 1)
         } else if (r.contains("NAO_ENCONTRADO")) {
-            log("[WRN] >> STATUS: 0x01 EMPTY")
+            log("[0xE1] source empty")
             TransferResult(false, 0, "EMPTY")
         } else {
-            log("[ERR] >> STATUS: 0xFF FAIL")
+            log("[0xEE] transfer failed")
             TransferResult(false, 0, r)
         }
     }
