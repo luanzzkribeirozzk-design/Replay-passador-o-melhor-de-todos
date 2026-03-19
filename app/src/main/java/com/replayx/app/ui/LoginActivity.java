@@ -1,6 +1,7 @@
 package com.replayx.app.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -21,11 +22,17 @@ import java.util.concurrent.Executors;
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
-    private static final String PREFS = "replayx_prefs";
-    private static final String PREF_KEY = "saved_key";
-    private static final String PREF_REM = "remember_key";
-    private static final String PROJECT = "principal-6bf6f";
-    private static final String API_KEY = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
+    private static final String PREFS     = "replayx_prefs";
+    private static final String PREF_KEY  = "saved_key";
+    private static final String PREF_REM  = "remember_key";
+    private static final String PREF_AUTO = "auto_login";
+    private static final String PREF_USER = "auto_user";
+    private static final String PREF_DAYS = "auto_days";
+    private static final String PREF_FIRST= "auto_first";
+    private static final String PREF_STAT = "auto_status";
+    private static final String PREF_PAUS = "auto_paused";
+    private static final String PROJECT   = "principal-6bf6f";
+    private static final String API_KEY   = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
 
@@ -35,7 +42,38 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        android.content.SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+
+        // Auto-login: se ja validou antes, entra direto
+        if (prefs.getBoolean(PREF_AUTO, false)) {
+            String user   = prefs.getString(PREF_USER, "");
+            int    days   = prefs.getInt(PREF_DAYS, 0);
+            long   first  = prefs.getLong(PREF_FIRST, 0L);
+            String status = prefs.getString(PREF_STAT, "active");
+            long   paused = prefs.getLong(PREF_PAUS, 0L);
+
+            // Verificar se ainda nao expirou localmente
+            long nowSec = System.currentTimeMillis() / 1000L;
+            long usedSec = ("paused".equals(status) && paused > 0)
+                ? (paused - first) : (nowSec - first);
+            long remain = days - (usedSec / 86400L);
+
+            if (remain > 0 && !"paused".equals(status)) {
+                goMain(user, days, first, status, paused);
+                return;
+            }
+            // Se expirou ou pausada, mostra tela de login normal
+            if ("paused".equals(status)) {
+                binding.tvError.setText("Key pausada");
+                binding.tvError.setTextColor(0xFFFF4444);
+                binding.tvError.setVisibility(View.VISIBLE);
+            } else {
+                binding.tvError.setText("Key expirada");
+                binding.tvError.setTextColor(0xFFFF4444);
+                binding.tvError.setVisibility(View.VISIBLE);
+            }
+        }
+
         boolean rem = prefs.getBoolean(PREF_REM, false);
         String saved = prefs.getString(PREF_KEY, "");
         binding.switchRemember.setChecked(rem);
@@ -47,12 +85,6 @@ public class LoginActivity extends AppCompatActivity {
             if (id == EditorInfo.IME_ACTION_DONE) { doLogin(); return true; }
             return false;
         });
-    }
-
-    private void setStatus(String msg, int color) {
-        binding.tvError.setText(msg);
-        binding.tvError.setTextColor(color);
-        binding.tvError.setVisibility(View.VISIBLE);
     }
 
     private void doLogin() {
@@ -108,7 +140,6 @@ public class LoginActivity extends AppCompatActivity {
                 JSONObject fields = doc.getJSONObject("fields");
 
                 String status = fields.has("status") ? fields.getJSONObject("status").optString("stringValue","") : "";
-
                 if ("paused".equals(status)) { fail("Key pausada"); return; }
                 if (!"active".equals(status)) { fail("[ERR] Key inativa"); return; }
 
@@ -130,7 +161,6 @@ public class LoginActivity extends AppCompatActivity {
                     if (dv != null) days = Integer.parseInt(dv.toString());
                 }
                 if (fields.has("user")) user = fields.getJSONObject("user").optString("stringValue","");
-
                 if (fields.has("firstUsed") && fields.getJSONObject("firstUsed").has("timestampValue")) {
                     String ts = fields.getJSONObject("firstUsed").getString("timestampValue");
                     firstSec = java.time.Instant.parse(ts).getEpochSecond();
@@ -140,7 +170,6 @@ public class LoginActivity extends AppCompatActivity {
                     pauseSec = java.time.Instant.parse(ts).getEpochSecond();
                 }
 
-                // Verificar expiracao
                 if (fields.has("firstUsed")) {
                     long usedSec = ("paused".equals(status) && pauseSec > 0)
                         ? (pauseSec - firstSec) : (nowSec - firstSec);
@@ -174,31 +203,41 @@ public class LoginActivity extends AppCompatActivity {
                 final int fDays = days;
                 final String fUser = user, fStatus = status;
 
-                // Mostrar "Key validada com sucesso" e entrar
                 main.post(() -> setStatus("Key validada com sucesso!", 0xFF00FF41));
                 Thread.sleep(1200);
                 main.post(() -> {
                     binding.progressBar.setVisibility(View.GONE);
                     boolean remember = binding.switchRemember.isChecked();
                     String keyStr = binding.etKey.getText().toString().trim();
+                    // Salvar tudo para auto-login futuro
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(PREF_REM, remember)
                         .putString(PREF_KEY, remember ? keyStr : "")
+                        .putBoolean(PREF_AUTO, true)
+                        .putString(PREF_USER, fUser)
+                        .putInt(PREF_DAYS, fDays)
+                        .putLong(PREF_FIRST, fFirst)
+                        .putString(PREF_STAT, fStatus)
+                        .putLong(PREF_PAUS, fPause)
                         .apply();
-                    Intent i = new Intent(this, MainActivity.class);
-                    i.putExtra("key_user", fUser);
-                    i.putExtra("key_days", fDays);
-                    i.putExtra("key_first_used_sec", fFirst);
-                    i.putExtra("key_status", fStatus);
-                    i.putExtra("key_paused_at_sec", fPause);
-                    startActivity(i);
-                    finish();
+                    goMain(fUser, fDays, fFirst, fStatus, fPause);
                 });
 
             } catch (Exception e) {
                 main.post(() -> fail("[ERR] " + e.getMessage()));
             }
         });
+    }
+
+    private void goMain(String user, int days, long first, String status, long paused) {
+        Intent i = new Intent(this, MainActivity.class);
+        i.putExtra("key_user", user);
+        i.putExtra("key_days", days);
+        i.putExtra("key_first_used_sec", first);
+        i.putExtra("key_status", status);
+        i.putExtra("key_paused_at_sec", paused);
+        startActivity(i);
+        finish();
     }
 
     private void fail(String msg) {
@@ -209,8 +248,10 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void showErr(String msg) {
-        setStatus(msg, 0xFFFF4444);
+    private void setStatus(String msg, int color) {
+        binding.tvError.setText(msg);
+        binding.tvError.setTextColor(color);
+        binding.tvError.setVisibility(View.VISIBLE);
     }
 
     @Override
