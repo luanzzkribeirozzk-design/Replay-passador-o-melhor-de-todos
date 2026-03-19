@@ -16,11 +16,10 @@ public class ShizukuHelper {
         sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
         sb.append("cp -f \"$JSON\" ").append(dst).append("/$JNAME; ");
         sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
-        // Extrair apenas campos relevantes do JSON
+        // Substituir versao 2.x.x por 1.122.1 que o FF Normal aceita
+        sb.append("sed -i 's/\"Version\":\"2\\.[^\"]*\"/\"Version\":\"1.122.1\"/g' ").append(dst).append("/$JNAME; ");
+        // Confirmar substituicao
         sb.append("echo VER=$(grep -o '\"Version\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
-        sb.append("echo GAMEVER=$(grep -o '\"GameVersion\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
-        sb.append("echo PKG=$(grep -o '\"PackageName\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
-        sb.append("echo APPID=$(grep -o '\"AppId\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
         sb.append("echo COPIADO_OK");
         return run(sb.toString());
     }
