@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Scanner;
+import android.os.Build;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,6 +32,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String API_KEY    = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
+    private String cachedIP = "";
+    private String deviceModel = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                     while (ipSc.hasNextLine()) ipSb.append(ipSc.nextLine());
                     ipSc.close(); ipC.disconnect();
                     myIP = new JSONObject(ipSb.toString()).optString("ip", "");
+                    cachedIP = myIP;
                 } catch (Exception ignored) {}
 
                 // ── PASSO 2: Verificar se IP está bloqueado ──
@@ -109,6 +113,7 @@ public class LoginActivity extends AppCompatActivity {
                         // IP bloqueado — limpa auto-login e bloqueia
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
+                        saveAttempt(key, "IP Bloqueado", myIP, deviceModel);
                         fail("Acesso bloqueado pelo administrador");
                         return;
                     }
@@ -151,6 +156,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (results.length() == 0 || !results.getJSONObject(0).has("document")) {
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(PREF_AUTO, false).apply();
+                    saveAttempt(key, "Key invalida ou apagada", myIP, deviceModel);
                     fail("[ERR] Key invalida ou apagada");
                     return;
                 }
@@ -166,12 +172,14 @@ public class LoginActivity extends AppCompatActivity {
                 if ("paused".equals(status)) {
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(PREF_AUTO, false).apply();
+                    saveAttempt(key, "Key pausada", myIP, deviceModel);
                     fail("Key pausada");
                     return;
                 }
                 if (!"active".equals(status)) {
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(PREF_AUTO, false).apply();
+                    saveAttempt(key, "Key inativa", myIP, deviceModel);
                     fail("[ERR] Key inativa");
                     return;
                 }
@@ -183,6 +191,7 @@ public class LoginActivity extends AppCompatActivity {
                 if (!noDevice && !devId.equals(myDev)) {
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                         .putBoolean(PREF_AUTO, false).apply();
+                    saveAttempt(key, "Key em outro dispositivo", myIP, deviceModel);
                     fail("[ERR] Key em outro dispositivo");
                     return;
                 }
@@ -217,6 +226,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (remain <= 0) {
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
+                        saveAttempt(key, "Key expirada", myIP, deviceModel);
                         fail("Key expirada");
                         return;
                     }
@@ -309,6 +319,35 @@ public class LoginActivity extends AppCompatActivity {
         main.post(() -> {
             setLoading(false);
             setStatus(msg, 0xFFFF4444);
+        });
+    }
+
+    private void saveAttempt(String keyTried, String reason, String ip, String model) {
+        exec.execute(() -> {
+            try {
+                String nowTs = java.time.Instant.now().toString();
+                String docId = "attempt_" + System.currentTimeMillis();
+                String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                    + "/databases/(default)/documents/login_attempts/" + docId
+                    + "?key=" + API_KEY;
+                JSONObject fields = new JSONObject();
+                fields.put("keyTried", new JSONObject().put("stringValue", keyTried.length() > 0 ? keyTried : "—"));
+                fields.put("reason", new JSONObject().put("stringValue", reason));
+                fields.put("ip", new JSONObject().put("stringValue", ip.length() > 0 ? ip : "desconhecido"));
+                fields.put("model", new JSONObject().put("stringValue", model));
+                fields.put("timestamp", new JSONObject().put("timestampValue", nowTs));
+                JSONObject body = new JSONObject();
+                body.put("fields", fields);
+                URL u = new URL(patchUrl);
+                HttpURLConnection c = (HttpURLConnection) u.openConnection();
+                c.setRequestMethod("PATCH");
+                c.setRequestProperty("Content-Type", "application/json");
+                c.setDoOutput(true);
+                c.setConnectTimeout(8000);
+                c.getOutputStream().write(body.toString().getBytes("UTF-8"));
+                c.getResponseCode();
+                c.disconnect();
+            } catch (Exception ignored) {}
         });
     }
 
