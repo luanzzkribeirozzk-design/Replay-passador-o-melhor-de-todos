@@ -49,20 +49,24 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    private void setStatus(String msg, int color) {
+        binding.tvError.setText(msg);
+        binding.tvError.setTextColor(color);
+        binding.tvError.setVisibility(View.VISIBLE);
+    }
+
     private void doLogin() {
         String key = binding.etKey.getText().toString().trim();
-        if (key.isEmpty()) { showErr("[ERR] Insira sua key!"); return; }
-        setLoad(true);
-        binding.tvError.setVisibility(View.GONE);
+        if (key.isEmpty()) { setStatus("[ERR] Insira sua key!", 0xFFFF4444); return; }
+        binding.btnLogin.setEnabled(false);
+        binding.progressBar.setVisibility(View.VISIBLE);
+        setStatus("Validando key...", 0xFF00FF41);
+
         String myDev = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         exec.execute(() -> {
             try {
-                // Buscar key no Firestore REST API
-                String base = "https://firestore.googleapis.com/v1/projects/" + PROJECT + "/databases/(default)/documents/keys";
-                String query = base + "?key=" + API_KEY;
-
-                // Usar runQuery para buscar por keyString
-                String runQuery = "https://firestore.googleapis.com/v1/projects/" + PROJECT + "/databases/(default)/documents:runQuery?key=" + API_KEY;
+                String runQuery = "https://firestore.googleapis.com/v1/projects/" + PROJECT
+                    + "/databases/(default)/documents:runQuery?key=" + API_KEY;
                 JSONObject body = new JSONObject();
                 JSONObject sq = new JSONObject();
                 JSONObject from = new JSONObject();
@@ -82,20 +86,21 @@ public class LoginActivity extends AppCompatActivity {
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");
                 conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
                 OutputStream os = conn.getOutputStream();
                 os.write(body.toString().getBytes("UTF-8"));
                 os.close();
 
                 Scanner sc = new Scanner(conn.getInputStream(), "UTF-8");
                 StringBuilder sb = new StringBuilder();
-                while (sc.hasNext()) sb.append(sc.next());
+                while (sc.hasNextLine()) sb.append(sc.nextLine());
                 sc.close();
                 conn.disconnect();
 
                 JSONArray results = new JSONArray(sb.toString());
                 if (results.length() == 0 || !results.getJSONObject(0).has("document")) {
-                    main.post(() -> { setLoad(false); showErr("[ERR] Key invalida"); });
-                    return;
+                    fail("[ERR] Key invalida"); return;
                 }
 
                 JSONObject doc = results.getJSONObject(0).getJSONObject("document");
@@ -103,22 +108,28 @@ public class LoginActivity extends AppCompatActivity {
                 JSONObject fields = doc.getJSONObject("fields");
 
                 String status = fields.has("status") ? fields.getJSONObject("status").optString("stringValue","") : "";
-                if ("paused".equals(status)) { main.post(() -> { setLoad(false); showErr("[ERR] Key pausada"); }); return; }
-                if (!"active".equals(status)) { main.post(() -> { setLoad(false); showErr("[ERR] Key inativa"); }); return; }
 
-                String devId = fields.has("deviceId") ? fields.getJSONObject("deviceId").optString("stringValue","null") : "null";
-                boolean noDevice = "null".equals(devId) || devId.isEmpty();
+                if ("paused".equals(status)) { fail("Key pausada"); return; }
+                if (!"active".equals(status)) { fail("[ERR] Key inativa"); return; }
+
+                String devId = fields.has("deviceId") ? fields.getJSONObject("deviceId").optString("stringValue","") : "";
+                boolean noDevice = devId.isEmpty() || "null".equals(devId);
 
                 if (!noDevice && !devId.equals(myDev)) {
-                    main.post(() -> { setLoad(false); showErr("[ERR] Key em outro dispositivo"); });
-                    return;
+                    fail("[ERR] Key em outro dispositivo"); return;
                 }
 
                 long nowSec = System.currentTimeMillis() / 1000L;
                 long firstSec = nowSec;
                 long pauseSec = 0L;
-                int days = fields.has("days") ? (int) fields.getJSONObject("days").optLong("integerValue", 0) : 0;
-                String user = fields.has("user") ? fields.getJSONObject("user").optString("stringValue","") : "";
+                int days = 0;
+                String user = "";
+
+                if (fields.has("days")) {
+                    Object dv = fields.getJSONObject("days").opt("integerValue");
+                    if (dv != null) days = Integer.parseInt(dv.toString());
+                }
+                if (fields.has("user")) user = fields.getJSONObject("user").optString("stringValue","");
 
                 if (fields.has("firstUsed") && fields.getJSONObject("firstUsed").has("timestampValue")) {
                     String ts = fields.getJSONObject("firstUsed").getString("timestampValue");
@@ -129,13 +140,14 @@ public class LoginActivity extends AppCompatActivity {
                     pauseSec = java.time.Instant.parse(ts).getEpochSecond();
                 }
 
-                long usedSec = ("paused".equals(status) && pauseSec > 0) ? (pauseSec - firstSec) : (nowSec - firstSec);
-                if (fields.has("firstUsed") && days - (usedSec / 86400L) <= 0) {
-                    main.post(() -> { setLoad(false); showErr("[ERR] Key expirada"); });
-                    return;
+                // Verificar expiracao
+                if (fields.has("firstUsed")) {
+                    long usedSec = ("paused".equals(status) && pauseSec > 0)
+                        ? (pauseSec - firstSec) : (nowSec - firstSec);
+                    if (days - (usedSec / 86400L) <= 0) { fail("Key expirada"); return; }
                 }
 
-                // Registrar device se primeiro uso
+                // Registrar primeiro uso
                 if (noDevice) {
                     String docId = docName.substring(docName.lastIndexOf("/") + 1);
                     String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
@@ -144,27 +156,29 @@ public class LoginActivity extends AppCompatActivity {
                     JSONObject patch = new JSONObject();
                     JSONObject pf = new JSONObject();
                     pf.put("deviceId", new JSONObject().put("stringValue", myDev));
-                    String nowTs = java.time.Instant.ofEpochSecond(nowSec).toString();
-                    pf.put("firstUsed", new JSONObject().put("timestampValue", nowTs));
+                    pf.put("firstUsed", new JSONObject().put("timestampValue", java.time.Instant.ofEpochSecond(nowSec).toString()));
                     patch.put("fields", pf);
                     URL pUrl = new URL(patchUrl);
                     HttpURLConnection pc = (HttpURLConnection) pUrl.openConnection();
                     pc.setRequestMethod("PATCH");
                     pc.setRequestProperty("Content-Type", "application/json");
                     pc.setDoOutput(true);
+                    pc.setConnectTimeout(10000);
                     pc.getOutputStream().write(patch.toString().getBytes("UTF-8"));
                     pc.getResponseCode();
                     pc.disconnect();
                     firstSec = nowSec;
                 }
 
-                final long fFirstSec = firstSec;
-                final long fPauseSec = pauseSec;
-                final String fUser = user;
+                final long fFirst = firstSec, fPause = pauseSec;
                 final int fDays = days;
-                final String fStatus = status;
+                final String fUser = user, fStatus = status;
+
+                // Mostrar "Key validada com sucesso" e entrar
+                main.post(() -> setStatus("Key validada com sucesso!", 0xFF00FF41));
+                Thread.sleep(1200);
                 main.post(() -> {
-                    setLoad(false);
+                    binding.progressBar.setVisibility(View.GONE);
                     boolean remember = binding.switchRemember.isChecked();
                     String keyStr = binding.etKey.getText().toString().trim();
                     getSharedPreferences(PREFS, MODE_PRIVATE).edit()
@@ -174,26 +188,29 @@ public class LoginActivity extends AppCompatActivity {
                     Intent i = new Intent(this, MainActivity.class);
                     i.putExtra("key_user", fUser);
                     i.putExtra("key_days", fDays);
-                    i.putExtra("key_first_used_sec", fFirstSec);
+                    i.putExtra("key_first_used_sec", fFirst);
                     i.putExtra("key_status", fStatus);
-                    i.putExtra("key_paused_at_sec", fPauseSec);
+                    i.putExtra("key_paused_at_sec", fPause);
                     startActivity(i);
                     finish();
                 });
+
             } catch (Exception e) {
-                main.post(() -> { setLoad(false); showErr("[ERR] " + e.getMessage()); });
+                main.post(() -> fail("[ERR] " + e.getMessage()));
             }
         });
     }
 
-    private void showErr(String msg) {
-        binding.tvError.setText(msg);
-        binding.tvError.setVisibility(View.VISIBLE);
+    private void fail(String msg) {
+        main.post(() -> {
+            binding.progressBar.setVisibility(View.GONE);
+            binding.btnLogin.setEnabled(true);
+            setStatus(msg, 0xFFFF4444);
+        });
     }
 
-    private void setLoad(boolean on) {
-        binding.progressBar.setVisibility(on ? View.VISIBLE : View.GONE);
-        binding.btnLogin.setEnabled(!on);
+    private void showErr(String msg) {
+        setStatus(msg, 0xFFFF4444);
     }
 
     @Override
