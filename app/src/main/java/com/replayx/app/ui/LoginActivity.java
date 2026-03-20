@@ -19,6 +19,8 @@ import java.util.Scanner;
 import android.os.Build;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import com.replayx.app.security.C;
+import com.replayx.app.security.IntegrityCheck;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -28,8 +30,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREF_REM   = "remember_key";
     private static final String PREF_AUTO  = "auto_login";
     private static final String PREF_KSTR  = "auto_kstr";
-    private static final String PROJECT    = "principal-6bf6f";
-    private static final String API_KEY    = "AIzaSyAmXzPrNaK_-Zr190oB8MuxA_sqI_ctetc";
     private final ExecutorService exec = Executors.newSingleThreadExecutor();
     private final Handler main = new Handler(Looper.getMainLooper());
     private String cachedIP = "";
@@ -43,13 +43,19 @@ public class LoginActivity extends AppCompatActivity {
 
         // Switch Hide Stream na tela de login
         SharedPreferences prefs2 = getSharedPreferences(PREFS, MODE_PRIVATE);
-        boolean hideOn = prefs2.getBoolean("hide_stream", true);
+        boolean hideOn = prefs2.getBoolean("hide_stream", false);
         binding.switchHideStreamLogin.setChecked(hideOn);
         applyHideStream(hideOn);
         binding.switchHideStreamLogin.setOnCheckedChangeListener((v, checked) -> {
             applyHideStream(checked);
             getSharedPreferences(PREFS, MODE_PRIVATE).edit().putBoolean("hide_stream", checked).apply();
         });
+
+        // Verificação de integridade do APK
+        if (!IntegrityCheck.isValid(this)) {
+            finish();
+            return;
+        }
 
         SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
@@ -108,6 +114,8 @@ public class LoginActivity extends AppCompatActivity {
     private void validateKey(String key, boolean isAutoLogin) {
         String myDev = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         exec.execute(() -> {
+            final String PROJECT = C.p();
+            final String API_KEY = C.k();
             try {
 
                 // ── PASSO 1: Pegar IP público ──
