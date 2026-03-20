@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         bypassCount = prefs.getInt(PREF_COUNT, 0)
-        val hideActive = prefs.getBoolean(PREF_HIDE, true)
+        val hideActive = prefs.getBoolean(PREF_HIDE, false)
         applyHideStream(hideActive)
         binding.switchHideStream.isChecked = hideActive
         updateHideStreamUI(hideActive)
