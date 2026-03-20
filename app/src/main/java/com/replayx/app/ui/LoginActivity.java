@@ -21,6 +21,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import com.replayx.app.security.C;
 import com.replayx.app.security.IntegrityCheck;
+import com.replayx.app.security.TamperGuard;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -53,6 +54,12 @@ public class LoginActivity extends AppCompatActivity {
 
         // Verificação de integridade do APK
         if (!IntegrityCheck.isValid(this)) {
+            finish();
+            return;
+        }
+
+        // Verificação anti-tamper (hash do DEX)
+        if (!TamperGuard.check(this)) {
             finish();
             return;
         }
@@ -377,6 +384,8 @@ public class LoginActivity extends AppCompatActivity {
     private void saveAttempt(String keyTried, String reason, String ip, String model) {
         exec.execute(() -> {
             try {
+                final String PROJECT = C.p();
+                final String API_KEY = C.k();
                 String nowTs = java.time.Instant.now().toString();
                 String docId = "attempt_" + System.currentTimeMillis();
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
