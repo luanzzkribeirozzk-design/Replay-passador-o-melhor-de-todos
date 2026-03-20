@@ -12,14 +12,14 @@ public final class C {
     private static final byte[] XK = {(byte)0x7B,(byte)0x2E,(byte)0xD4,(byte)0x68};
 
     // PROJECT ID codificado
-    private static final byte[] P = {79,213,53,255,92,206,44,240,83,138,106,243,89,145,58};
+    private static final byte[] P = {79,(byte)213,53,(byte)255,92,(byte)206,44,(byte)240,83,(byte)138,106,(byte)243,89,(byte)145,58};
 
     // API KEY dividida em 5 partes com offsets embaralhados
-    private static final byte[] K1 = {58,103,174,9,40,87,149};
-    private static final byte[] K2 = {5,35,84,132,26,53,79};
-    private static final byte[] K3 = {159,55,86,116,166,89,66};
-    private static final byte[] K4 = {30,187,42,67,99,161,16};
-    private static final byte[] K5 = {58,113,167,25,50,113,183,28,30,90,183};
+    private static final byte[] K1 = {58,103,(byte)174,9,40,87,(byte)149};
+    private static final byte[] K2 = {5,35,84,(byte)132,26,53,79};
+    private static final byte[] K3 = {(byte)159,55,86,116,(byte)166,89,66};
+    private static final byte[] K4 = {30,(byte)187,42,67,99,(byte)161,16};
+    private static final byte[] K5 = {58,113,(byte)167,25,50,113,(byte)183,28,30,90,(byte)183};
 
     // Ordem real das partes embaralhada (não é 1,2,3,4,5)
     private static final int[] ORDER = {0, 1, 2, 3, 4};
