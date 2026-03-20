@@ -3,25 +3,20 @@ package com.replayx.app.security;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import java.io.File;
-import java.security.MessageDigest;
 
 /**
- * Verificação de integridade extrema:
- * - Anti-debug (detecta debugger Java e nativo)
- * - Anti-Frida (detecta porta 27042 e processo frida-server)
- * - Anti-emulador expandido (30+ checks)
- * - Verifica assinatura SHA-256 do APK
+ * Verificação de integridade:
+ * - Anti-debugger Java e nativo (só bloqueia se debugger ATIVO, não build debug)
+ * - Anti-Frida
+ * - Anti-emulador (sem falsos positivos em celulares reais)
+ * - Verifica package name e assinatura
  */
 public final class IntegrityCheck {
     private IntegrityCheck() {}
 
     private static final String PKG = "com.replayx.app";
 
-    // SHA-256 da assinatura do debug keystore (gerado no primeiro build)
-    // Aceita qualquer assinatura por ora, mas BLOQUEIA ausência de assinatura
-    // e BLOQUEIA emulador/debug/frida
     private static volatile boolean _checked = false;
     private static volatile boolean _result  = false;
 
@@ -42,23 +37,18 @@ public final class IntegrityCheck {
                 .getPackageInfo(ctx.getPackageName(), PackageManager.GET_SIGNATURES);
             if (pi.signatures == null || pi.signatures.length == 0) return false;
 
-            // 3. Anti-debugger Java
+            // 3. Anti-debugger — só bloqueia se debugger ATIVAMENTE conectado
+            // NÃO verificar FLAG_DEBUGGABLE pois build debug sempre tem essa flag
             if (android.os.Debug.isDebuggerConnected()) return false;
-            if (android.os.Debug.waitingForDebugger()) return false;
 
             // 4. Anti-debugger nativo (TracerPID)
             if (isBeingTraced()) return false;
 
-            // 5. Anti-Frida (porta 27042 e nome de processo)
+            // 5. Anti-Frida
             if (isFridaRunning()) return false;
 
-            // 6. Anti-emulador expandido
+            // 6. Anti-emulador (sem falsos positivos)
             if (isEmulator()) return false;
-
-            // 7. Verificar que não está em modo debug do app
-            boolean isDebuggable = (ctx.getApplicationInfo().flags
-                & android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0;
-            if (isDebuggable) return false;
 
             return true;
         } catch (Exception e) {
@@ -84,14 +74,14 @@ public final class IntegrityCheck {
         return false;
     }
 
-    /** Detecta Frida pela porta 27042 e por arquivos/processos conhecidos */
+    /** Detecta Frida pela porta 27042 e arquivos conhecidos */
     private static boolean isFridaRunning() {
         // Verificar porta 27042
         try {
             java.net.Socket s = new java.net.Socket();
             s.connect(new java.net.InetSocketAddress("127.0.0.1", 27042), 80);
             s.close();
-            return true; // porta aberta = Frida rodando
+            return true;
         } catch (Exception ignored) {}
 
         // Verificar arquivos Frida no sistema
@@ -105,7 +95,7 @@ public final class IntegrityCheck {
             if (new File(path).exists()) return true;
         }
 
-        // Verificar processos suspeitos em /proc
+        // Verificar processos suspeitos
         try {
             File proc = new File("/proc");
             File[] pids = proc.listFiles();
@@ -117,8 +107,7 @@ public final class IntegrityCheck {
                             new java.io.FileReader(cmdline));
                         String cmd = br.readLine();
                         br.close();
-                        if (cmd != null && (cmd.contains("frida") || cmd.contains("gdb")
-                            || cmd.contains("jdwp") || cmd.contains("xposed"))) {
+                        if (cmd != null && (cmd.contains("frida") || cmd.contains("gdb"))) {
                             return true;
                         }
                     }
@@ -129,21 +118,29 @@ public final class IntegrityCheck {
         return false;
     }
 
-    /** Detecta emulador com 30+ verificações */
+    /**
+     * Detecta emulador sem falsos positivos em celulares reais.
+     * Removido: "test-keys" (celulares sem certificado oficial usam isso),
+     *           "x86" no hardware (alguns Snapdragon têm isso),
+     *           "unknown" (alguns celulares customizados usam).
+     */
     private static boolean isEmulator() {
-        String model     = android.os.Build.MODEL.toLowerCase();
-        String product   = android.os.Build.PRODUCT.toLowerCase();
-        String brand     = android.os.Build.BRAND.toLowerCase();
-        String device    = android.os.Build.DEVICE.toLowerCase();
-        String hardware  = android.os.Build.HARDWARE.toLowerCase();
-        String manufact  = android.os.Build.MANUFACTURER.toLowerCase();
-        String fingerp   = android.os.Build.FINGERPRINT.toLowerCase();
-        String host      = android.os.Build.HOST.toLowerCase();
+        String model    = android.os.Build.MODEL.toLowerCase();
+        String product  = android.os.Build.PRODUCT.toLowerCase();
+        String brand    = android.os.Build.BRAND.toLowerCase();
+        String device   = android.os.Build.DEVICE.toLowerCase();
+        String hardware = android.os.Build.HARDWARE.toLowerCase();
+        String manufact = android.os.Build.MANUFACTURER.toLowerCase();
+        String fingerp  = android.os.Build.FINGERPRINT.toLowerCase();
 
-        // Palavras-chave de emulador
-        String[] emWords = {"sdk", "genymotion", "goldfish", "ranchu", "emulator",
-            "nox", "bluestacks", "memu", "ldplayer", "andy", "droid4x", "vbox",
-            "generic", "unknown", "android sdk built for x86"};
+        // Palavras que SÓ aparecem em emuladores — nunca em celulares reais
+        String[] emWords = {
+            "genymotion", "goldfish", "ranchu",
+            "nox", "bluestacks", "memu", "ldplayer",
+            "andy", "droid4x", "vbox",
+            "android sdk built for x86",
+            "sdk_gphone"
+        };
 
         for (String w : emWords) {
             if (model.contains(w) || product.contains(w) || device.contains(w)
@@ -152,22 +149,18 @@ public final class IntegrityCheck {
             }
         }
 
-        // Brand genérico
-        if ("generic".equals(brand) || "android".equals(brand)) return true;
+        // "sdk" no product E model juntos (evita bloquear celulares com "sdk" só em um)
+        if (product.contains("sdk") && model.contains("sdk")) return true;
 
-        // Fingerprint de emulador
-        if (fingerp.startsWith("generic") || fingerp.startsWith("unknown")
-            || fingerp.contains("test-keys")) return true;
+        // Brand puramente genérico (celulares reais sempre têm marca)
+        if ("generic".equals(brand)) return true;
 
-        // Hardware de emulador
-        if (hardware.equals("goldfish") || hardware.equals("ranchu")
-            || hardware.contains("vbox") || hardware.contains("x86")) return true;
+        // Fingerprint começa com "generic/" — emulador AOSP puro
+        if (fingerp.startsWith("generic/")) return true;
 
-        // Arquivo de emulador
+        // Arquivos que só existem em emulador QEMU
         if (new File("/dev/socket/qemud").exists()) return true;
         if (new File("/dev/qemu_pipe").exists()) return true;
-        if (new File("/system/lib/libc_malloc_debug_qemu.so").exists()) return true;
-        if (new File("/sys/qemu_trace").exists()) return true;
 
         return false;
     }
