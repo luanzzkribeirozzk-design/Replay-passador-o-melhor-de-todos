@@ -1,4 +1,4 @@
-name: Build APK - Passador de Replay X
+name: Build APK - Hamster Script
 
 on:
   push:
@@ -27,9 +27,10 @@ jobs:
       - name: Gerar Gradle Wrapper
         run: gradle wrapper --gradle-version=8.4
 
-      - name: Remover arquivos Kotlin obsoletos
+      - name: Remover arquivos obsoletos
         run: |
           rm -f app/src/main/java/com/replayx/app/ui/LoginActivity.kt
+          rm -f app/src/main/java/com/replayx/app/ui/LoginActivity.java
           echo "Arquivos obsoletos removidos"
 
       - name: Build APK
@@ -38,6 +39,6 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ReplayX-APK
+          name: HamsterScript-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 30
