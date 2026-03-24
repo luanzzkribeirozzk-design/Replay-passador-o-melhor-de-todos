@@ -123,7 +123,64 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private fun updateStatus(active: Boolean) {
         runOnUiThread {
             binding.tvShizukuStatus.text = if (active) "● ATIVO" else "● INATIVO"
-            binding.tvShizukuStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFFFF4444.toInt()
+            binding.tvShizukuStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFFFF4444.toInt())
+        }
+    }
+
+    private fun checkShizuku(): Boolean {
+        if (Shizuku.isPreV11()) return false
+        return try {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                true
+            } else {
+                Shizuku.requestPermission(SHIZUKU_CODE)
+                false
+            }
+        } catch (e: Exception) {
+            updateStatus(false)
+            false
+        }
+    }
+
+    private fun startTransfer(type: String) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            bypassCount++
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putInt(PREF_COUNT, bypassCount).apply()
+            
+            val result = if (type == "maxToNormal") {
+                service.transferMaxToNormal(bypassCount) { msg -> log(msg) }
+            } else {
+                service.transferNormalToMax(bypassCount) { msg -> log(msg) }
+            }
+            
+            withContext(Dispatchers.Main) {
+                if (result.success) {
+                    log("[SUCCESS] Bypass concluído!")
+                } else {
+                    log("[ERROR] Falha: ${result.errorMessage}")
+                }
+            }
+        }
+    }
+
+    private fun applyHideStream(active: Boolean) {
+        if (active) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+    }
+
+    private fun updateHideStreamUI(active: Boolean) {
+        binding.tvHideStreamStatus.text = if (active) "HIDE STREAM: ON" else "HIDE STREAM: OFF"
+        binding.tvHideStreamStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFF444444.toInt())
+    }
+
+    private fun log(msg: String) {
+        runOnUiThread {
+            val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+            binding.tvLog.append("[$time] $msg\n")
+            binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
         }
     }
 
