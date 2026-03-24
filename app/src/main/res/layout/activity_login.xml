@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#010A01">
+    android:background="#0A0400">
 
     <!-- SPLASH SCREEN PRETA -->
     <FrameLayout
@@ -66,8 +66,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="PASSADOR DE"
-                    android:textColor="#005500"
+                    android:text="BY: HAMSTER SCRIPT"
+                    android:textColor="#7A3000"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
                     android:textStyle="bold"
@@ -76,8 +76,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="REPLAY X"
-                    android:textColor="#00FF41"
+                    android:text="HAMSTER SCRIPT"
+                    android:textColor="#FF6B00"
                     android:textSize="42sp"
                     android:textStyle="bold"
                     android:gravity="center" />
@@ -85,8 +85,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="FREE FIRE  ·  BYPASS SYSTEM"
-                    android:textColor="#004400"
+                    android:text="BYPASS  ·  BYPASS HAMSTER"
+                    android:textColor="#5A2000"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
@@ -107,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ACESSO COM KEY"
-                    android:textColor="#00FF41"
+                    android:textColor="#FF6B00"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.2"
@@ -127,7 +127,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="HIDE STREAM"
-                        android:textColor="#00FF41"
+                        android:textColor="#FF6B00"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
@@ -145,7 +145,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
-                    android:textColor="#004400"
+                    android:textColor="#5A2000"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -156,8 +156,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
-                    android:textColor="#00FF41"
-                    android:textColorHint="#224422"
+                    android:textColor="#FF6B00"
+                    android:textColorHint="#3A1500"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -183,7 +183,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Lembrar key"
-                        android:textColor="#006600"
+                        android:textColor="#7A3000"
                         android:textSize="12sp"
                         android:fontFamily="monospace"
                         android:layout_marginStart="10dp" />
@@ -209,7 +209,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#FF4444"
+                    android:textColor="#FF6B00"
                     android:textSize="11sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -223,7 +223,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#00FF41"
+                    android:indeterminateTint="#FF6B00"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -243,7 +243,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TEMPO RESTANTE"
-                    android:textColor="#004400"
+                    android:textColor="#5A2000"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -254,7 +254,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#00FF41"
+                    android:textColor="#FF6B00"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace"
@@ -265,7 +265,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#004400"
+                    android:textColor="#5A2000"
                     android:textSize="10sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -276,8 +276,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REPLAY X  ·  FREE FIRE BYPASS SYSTEM"
-                android:textColor="#002200"
+                android:text="HAMSTER SCRIPT  ·  BYPASS HAMSTER"
+                android:textColor="#3A1000"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp" />
