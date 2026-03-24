@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#010A01">
+    android:background="#0A0400">
 
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
@@ -28,8 +28,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PASSADOR DE"
-                android:textColor="#005500"
+                android:text="BY: HAMSTER SCRIPT"
+                android:textColor="#7A3000"
                 android:textSize="11sp"
                 android:letterSpacing="0.4"
                 android:textStyle="bold" />
@@ -37,8 +37,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REPLAY X"
-                android:textColor="#00FF41"
+                android:text="HAMSTER SCRIPT"
+                android:textColor="#FF6B00"
                 android:textSize="36sp"
                 android:textStyle="bold" />
 
@@ -52,8 +52,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="FREE FIRE  ·  BYPASS SYSTEM"
-                    android:textColor="#004400"
+                    android:text="BYPASS  ·  BYPASS HAMSTER"
+                    android:textColor="#5A2000"
                     android:textSize="10sp" />
 
                 <TextView
@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text=""
-                    android:textColor="#004400"
+                    android:textColor="#5A2000"
                     android:textSize="9sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -91,7 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#00FF41"
+                    android:textColor="#FF6B00"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace" />
@@ -100,7 +100,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#00FF41" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#FF6B00" />
 
         <!-- HIDE STREAM -->
         <LinearLayout
@@ -124,7 +124,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="HIDE STREAM"
-                    android:textColor="#00FF41"
+                    android:textColor="#FF6B00"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace" />
@@ -149,7 +149,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#003300" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#5A2000" />
 
         <!-- BOTOES -->
         <LinearLayout
@@ -206,7 +206,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:text="Limpar logs"
-                android:textColor="#00FF41"
+                android:textColor="#FF6B00"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:background="@drawable/btn_clear"
@@ -214,7 +214,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#003300" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#5A2000" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -230,7 +230,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="root@replayx:~$ bypass_log"
+                android:text="root@hamsterscript:~$ bypass_log"
                 android:textColor="#00AA22"
                 android:textSize="10sp"
                 android:fontFamily="monospace" />
@@ -238,7 +238,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="v1.0"
+                android:text="v2.0"
                 android:textColor="#003311"
                 android:textSize="10sp" />
 
@@ -259,7 +259,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
                 android:text=""
-                android:textColor="#00FF41"
+                android:textColor="#FF6B00"
                 android:textSize="11sp"
                 android:lineSpacingExtra="2dp" />
 
@@ -275,8 +275,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="REPLAY X  ·  FREE FIRE BYPASS SYSTEM"
-                android:textColor="#003300"
+                android:text="HAMSTER SCRIPT  ·  BYPASS HAMSTER"
+                android:textColor="#5A2000"
                 android:textSize="9sp" />
 
         </LinearLayout>
