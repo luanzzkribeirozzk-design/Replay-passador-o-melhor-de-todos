@@ -64,14 +64,12 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) { speak("Bypass activated"); startTransfer("maxToNormal") }
+            if (checkShizuku()) { speak("Hamster bypass ativado"); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) { speak("Bypass activated"); startTransfer("normalToMax") }
+            if (checkShizuku()) { speak("Hamster bypass ativado"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
-        
-        updateStatus(Shizuku.pingBinder())
     }
 
     private fun startKeyTimer(user: String, days: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
@@ -99,112 +97,112 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 binding.tvTimer.setTextColor(when {
                     ms < 86400000L -> 0xFFFF4444.toInt()
                     ms < 259200000L -> 0xFFFFD700.toInt()
-                    else -> 0xFF00FF41.toInt()
+                    else -> 0xFFFF6B00.toInt()
                 })
             }
             override fun onFinish() {
                 binding.tvTimer.text = "KEY EXPIRADA"
                 binding.tvTimer.setTextColor(0xFFFF4444.toInt())
                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().remove("saved_key").apply()
+                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
                 finish()
             }
         }.start()
     }
 
     private fun formatTime(ms: Long): String {
-        val sec = ms / 1000
-        val d = sec / 86400
-        val h = (sec % 86400) / 3600
-        val m = (sec % 3600) / 60
-        val s = sec % 60
-        return String.format("%02dd %02dh %02dm %02ds", d, h, m, s)
+        val s = ms / 1000L
+        val d = s / 86400L
+        val h = (s % 86400L) / 3600L
+        val m = (s % 3600L) / 60L
+        val sec = s % 60L
+        return String.format("%02dd %02dh %02dm %02ds", d, h, m, sec)
     }
 
-    private fun updateStatus(active: Boolean) {
-        runOnUiThread {
-            binding.tvShizukuStatus.text = if (active) "● ATIVO" else "● INATIVO"
-            binding.tvShizukuStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFFFF4444.toInt())
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts?.language = Locale.US
+            tts?.setSpeechRate(0.9f)
+            ttsReady = true
         }
-    }
-
-    private fun checkShizuku(): Boolean {
-        if (Shizuku.isPreV11()) return false
-        return try {
-            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
-                true
-            } else {
-                Shizuku.requestPermission(SHIZUKU_CODE)
-                false
-            }
-        } catch (e: Exception) {
-            updateStatus(false)
-            false
-        }
-    }
-
-    private fun startTransfer(type: String) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            bypassCount++
-            getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().putInt(PREF_COUNT, bypassCount).apply()
-            
-            val result = if (type == "maxToNormal") {
-                service.transferMaxToNormal(bypassCount) { msg -> log(msg) }
-            } else {
-                service.transferNormalToMax(bypassCount) { msg -> log(msg) }
-            }
-            
-            withContext(Dispatchers.Main) {
-                if (result.success) {
-                    log("[SUCCESS] Bypass concluído!")
-                } else {
-                    log("[ERROR] Falha: ${result.errorMessage}")
-                }
-            }
-        }
-    }
-
-    private fun applyHideStream(active: Boolean) {
-        if (active) {
-            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        } else {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        }
-    }
-
-    private fun updateHideStreamUI(active: Boolean) {
-        binding.tvHideStreamStatus.text = if (active) "HIDE STREAM: ON" else "HIDE STREAM: OFF"
-        binding.tvHideStreamStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFF444444.toInt())
-    }
-
-    private fun log(msg: String) {
-        runOnUiThread {
-            val time = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
-            binding.tvLog.append("[$time] $msg\n")
-            binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
-        }
-    }
-
-    private fun clearLog() {
-        binding.tvLog.text = ""
     }
 
     private fun speak(text: String) {
         if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
-    override fun onInit(status: Int) {
-        if (status == TextToSpeech.SUCCESS) {
-            tts?.language = Locale.US
-            ttsReady = true
+    private fun applyHideStream(active: Boolean) {
+        if (active) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    }
+
+    private fun updateHideStreamUI(active: Boolean) {
+        if (active) {
+            binding.tvHideStreamStatus.text = "HIDE STREAM: ON"
+            binding.tvHideStreamStatus.setTextColor(0xFFFF6B00.toInt())
+        } else {
+            binding.tvHideStreamStatus.text = "HIDE STREAM: OFF"
+            binding.tvHideStreamStatus.setTextColor(0xFF444444.toInt())
+        }
+    }
+
+    private fun checkShizuku(): Boolean {
+        return try {
+            if (!Shizuku.pingBinder()) { log("[ERR] SHIZUKU_DEAD"); false }
+            else if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                Shizuku.requestPermission(SHIZUKU_CODE); log("[SYS] SHIZUKU_PERM_REQUEST"); false
+            } else true
+        } catch (ex: Exception) { log("[ERR] " + ex.message.orEmpty()); false }
+    }
+
+    private fun startTransfer(direction: String) {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        lifecycleScope.launch {
+            log("--------------------------------")
+            bypassCount++
+            prefs.edit().putInt(PREF_COUNT, bypassCount).apply()
+            val count = bypassCount
+            val result = withContext(Dispatchers.IO) {
+                if (direction == "maxToNormal") {
+                    service.transferMaxToNormal(count) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                } else {
+                    service.transferNormalToMax(count) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
+                }
+            }
+            if (!result.success) log("[ERR] >> BYPASS_FAIL")
+            log("--------------------------------")
+        }
+    }
+
+    private fun log(msg: String) {
+        val t = SimpleDateFormat("HH:mm:ss.SSS", Locale.getDefault()).format(Date())
+        val cur = binding.tvLog.text.toString()
+        val sep = System.lineSeparator()
+        val next = if (cur.isEmpty()) "[$t] $msg" else "$cur$sep[$t] $msg"
+        binding.tvLog.text = next
+        binding.scrollLog.post { binding.scrollLog.fullScroll(View.FOCUS_DOWN) }
+    }
+
+    private fun clearLog() { binding.tvLog.text = "" }
+
+    private fun updateStatus(active: Boolean) {
+        runOnUiThread {
+            if (active) {
+                binding.tvShizukuStatus.text = "● SHIZUKU ATIVO"
+                binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_green_light))
+            } else {
+                binding.tvShizukuStatus.text = "● SHIZUKU INATIVO"
+                binding.tvShizukuStatus.setTextColor(getColor(android.R.color.holo_red_light))
+            }
         }
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+        countDownTimer?.cancel()
         tts?.stop()
         tts?.shutdown()
-        countDownTimer?.cancel()
         Shizuku.removeBinderReceivedListener(binderReceived)
         Shizuku.removeBinderDeadListener(binderDead)
-        super.onDestroy()
     }
 }
