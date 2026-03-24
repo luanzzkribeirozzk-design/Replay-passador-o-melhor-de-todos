@@ -32,7 +32,7 @@ jobs:
           rm -f app/src/main/java/com/replayx/app/ui/MainActivity.java
           echo "Arquivos obsoletos removidos"
 
-      - name: Beild APK
+      - name: Build APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
