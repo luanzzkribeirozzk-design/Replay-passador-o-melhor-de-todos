@@ -29,11 +29,10 @@ jobs:
 
       - name: Remover arquivos obsoletos
         run: |
-          rm -f app/src/main/java/com/replayx/app/ui/LoginActivity.kt
-          rm -f app/src/main/java/com/replayx/app/ui/LoginActivity.java
+          rm -f app/src/main/java/com/replayx/app/ui/MainActivity.java
           echo "Arquivos obsoletos removidos"
 
-      - name: Build APK
+      - name: Beild APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
