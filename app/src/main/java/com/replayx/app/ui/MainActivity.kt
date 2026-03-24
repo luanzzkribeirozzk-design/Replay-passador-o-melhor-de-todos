@@ -70,6 +70,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             if (checkShizuku()) { speak("Bypass activated"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
+        
+        updateStatus(Shizuku.pingBinder())
     }
 
     private fun startKeyTimer(user: String, days: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
@@ -104,8 +106,48 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 binding.tvTimer.text = "KEY EXPIRADA"
                 binding.tvTimer.setTextColor(0xFFFF4444.toInt())
                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE).edit().remove("saved_key").apply()
-                // key expirada - encerra o app
                 finish()
             }
         }.start()
     }
+
+    private fun formatTime(ms: Long): String {
+        val sec = ms / 1000
+        val d = sec / 86400
+        val h = (sec % 86400) / 3600
+        val m = (sec % 3600) / 60
+        val s = sec % 60
+        return String.format("%02dd %02dh %02dm %02ds", d, h, m, s)
+    }
+
+    private fun updateStatus(active: Boolean) {
+        runOnUiThread {
+            binding.tvShizukuStatus.text = if (active) "● ATIVO" else "● INATIVO"
+            binding.tvShizukuStatus.setTextColor(if (active) 0xFF00FF41.toInt() else 0xFFFF4444.toInt()
+        }
+    }
+
+    private fun clearLog() {
+        binding.tvLog.text = ""
+    }
+
+    private fun speak(text: String) {
+        if (ttsReady) tts?.speak(text, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    override fun onInit(status: Int) {
+        if (status == TextToSpeech.SUCCESS) {
+            tts?.language = Locale.US
+            ttsReady = true
+        }
+    }
+
+    override fun onDestroy() {
+        tts?.stop()
+        tts?.shutdown()
+        countDownTimer?.cancel()
+        Shizuku.removeBinderReceivedListener(binderReceived)
+        Shizuku.removeBinderDeadListener(binderDead)
+        super.onDestroy()
+    }
+}
