@@ -64,10 +64,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) { speak("Hamster bypass ativado"); startTransfer("maxToNormal") }
+            if (checkShizuku()) { speak("Bypass activated"); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) { speak("Hamster bypass ativado"); startTransfer("normalToMax") }
+            if (checkShizuku()) { speak("Bypass activated"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
