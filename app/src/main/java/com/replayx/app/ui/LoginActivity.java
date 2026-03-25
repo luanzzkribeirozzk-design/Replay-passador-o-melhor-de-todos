@@ -228,9 +228,13 @@ public class LoginActivity extends AppCompatActivity {
                 if (!noDevice && !devId.equals(myDev)) {
                     String savedIP = fields.has("lastIP")
                         ? fields.getJSONObject("lastIP").optString("stringValue", "") : "";
+                    String savedModel = fields.has("deviceModel")
+                        ? fields.getJSONObject("deviceModel").optString("stringValue", "") : "";
                     boolean sameIP = !myIP.isEmpty() && !savedIP.isEmpty() && myIP.equals(savedIP);
-                    if (sameIP) {
-                        noDevice = false;
+                    boolean sameModel = !deviceModel.isEmpty() && !savedModel.isEmpty() && deviceModel.equals(savedModel);
+                    if (sameIP || sameModel) {
+                        // Mesmo dispositivo (IP ou modelo coincide) — atualiza o deviceId silenciosamente
+                        noDevice = true; // força atualização do deviceId no passo 8
                         devId = myDev;
                     } else {
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
@@ -282,12 +286,13 @@ public class LoginActivity extends AppCompatActivity {
                     && !fields.getJSONObject("deviceId").optString("stringValue","").equals(myDev);
 
                 String patchMask = noDevice
-                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
-                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&key=" + API_KEY;
+                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
+                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&key=" + API_KEY;
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents/keys/" + docId + patchMask;
                 JSONObject pf = new JSONObject();
                 pf.put("deviceId", new JSONObject().put("stringValue", myDev));
+                pf.put("deviceModel", new JSONObject().put("stringValue", deviceModel));
                 if (noDevice) {
                     pf.put("firstUsed", new JSONObject().put("timestampValue",
                         java.time.Instant.ofEpochSecond(nowSec).toString()));
