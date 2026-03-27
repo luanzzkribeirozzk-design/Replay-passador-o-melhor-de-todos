@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text=""
-                    android:textColor="#5A2000"
+                    android:textColor="#B700FF"
                     android:textSize="9sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -149,7 +149,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#5A2000" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#B700FF" />
 
         <!-- BOTOES -->
         <LinearLayout
@@ -174,8 +174,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Free Fire MAX  →  Free Fire Normal"
-                android:textColor="#006600"
+                    android:text="Free Fire MAX  →  Free Fire Normal"
+                    android:textColor="#00FF41"
                 android:textSize="10sp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="10dp" />
@@ -195,8 +195,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Free Fire Normal  →  Free Fire MAX"
-                android:textColor="#006600"
+                    android:text="Free Fire Normal  →  Free Fire MAX"
+                    android:textColor="#00FF41"
                 android:textSize="10sp"
                 android:layout_gravity="center"
                 android:layout_marginBottom="10dp" />
@@ -214,7 +214,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#5A2000" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#B700FF" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -231,7 +231,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="root@yguixscript:~$ bypass_log"
-                android:textColor="#00AA22"
+                android:textColor="#00FF41"
                 android:textSize="10sp"
                 android:fontFamily="monospace" />
 
@@ -239,7 +239,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="v2.0"
-                android:textColor="#003311"
+                android:textColor="#00FF41"
                 android:textSize="10sp" />
 
         </LinearLayout>
