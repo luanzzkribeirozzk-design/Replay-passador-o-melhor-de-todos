@@ -1,4 +1,4 @@
-# Passador de Replay X
+# Yguix
 
 **App para transferir replays entre Free Fire e Free Fire MAX**
 
