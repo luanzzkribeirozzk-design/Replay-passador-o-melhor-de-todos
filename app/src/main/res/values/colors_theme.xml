@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default Orange Theme -->
+    <color name="primary_color">#FF6B00</color>
+    <color name="primary_dark">#5A2000</color>
+    <color name="accent_color">#FF6B00</color>
+    
+    <!-- Neon Green Theme -->
+    <color name="green_neon">#00FF41</color>
+    <color name="green_dark">#00AA22</color>
+    <color name="green_light">#00FF41</color>
+    
+    <!-- Neon Purple Theme -->
+    <color name="purple_neon">#B700FF</color>
+    <color name="purple_dark">#7700BB</color>
+    <color name="purple_light">#B700FF</color>
+    
+    <!-- Neon Blue Theme -->
+    <color name="blue_neon">#00AAFF</color>
+    <color name="blue_dark">#0066BB</color>
+    <color name="blue_light">#00AAFF</color>
+    
+    <!-- Neon Red Theme -->
+    <color name="red_neon">#FF0055</color>
+    <color name="red_dark">#BB0033</color>
+    <color name="red_light">#FF0055</color>
+</resources>

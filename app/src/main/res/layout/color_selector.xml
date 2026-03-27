@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:padding="16dp"
+    android:background="#120800"
+    android:layout_margin="12dp">
+
+    <Button
+        android:id="@+id/btnColorGreen"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/color_btn_green"
+        android:text="🟢"
+        android:textSize="24sp"
+        android:layout_margin="8dp" />
+
+    <Button
+        android:id="@+id/btnColorPurple"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/color_btn_purple"
+        android:text="🟣"
+        android:textSize="24sp"
+        android:layout_margin="8dp" />
+
+    <Button
+        android:id="@+id/btnColorBlue"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/color_btn_blue"
+        android:text="🔵"
+        android:textSize="24sp"
+        android:layout_margin="8dp" />
+
+    <Button
+        android:id="@+id/btnColorRed"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@drawable/color_btn_red"
+        android:text="🔴"
+        android:textSize="24sp"
+        android:layout_margin="8dp" />
+
+</LinearLayout>

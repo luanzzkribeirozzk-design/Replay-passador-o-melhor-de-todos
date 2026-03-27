@@ -66,7 +66,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: HAMSTER SCRIPT"
+                    android:text="BY: Yguix SCRIPT"
                     android:textColor="#7A3000"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
@@ -76,7 +76,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="HAMSTER SCRIPT"
+                    android:text="Yguix SCRIPT"
                     android:textColor="#FF6B00"
                     android:textSize="42sp"
                     android:textStyle="bold"
@@ -85,12 +85,60 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  BYPASS HAMSTER"
+                    android:text="BYPASS  ·  BYPASS Yguix"
                     android:textColor="#5A2000"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
                     android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- COLOR SELECTOR -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:padding="12dp"
+                android:background="#120800"
+                android:layout_marginBottom="12dp">
+
+                <Button
+                    android:id="@+id/btnColorGreen"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/color_btn_green"
+                    android:text="🟢"
+                    android:textSize="20sp"
+                    android:layout_margin="6dp" />
+
+                <Button
+                    android:id="@+id/btnColorPurple"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/color_btn_purple"
+                    android:text="🟣"
+                    android:textSize="20sp"
+                    android:layout_margin="6dp" />
+
+                <Button
+                    android:id="@+id/btnColorBlue"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/color_btn_blue"
+                    android:text="🔵"
+                    android:textSize="20sp"
+                    android:layout_margin="6dp" />
+
+                <Button
+                    android:id="@+id/btnColorRed"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@drawable/color_btn_red"
+                    android:text="🔴"
+                    android:textSize="20sp"
+                    android:layout_margin="6dp" />
 
             </LinearLayout>
 
@@ -276,7 +324,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="HAMSTER SCRIPT  ·  BYPASS HAMSTER"
+                android:text="Yguix SCRIPT  ·  BYPASS Yguix"
                 android:textColor="#3A1000"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
