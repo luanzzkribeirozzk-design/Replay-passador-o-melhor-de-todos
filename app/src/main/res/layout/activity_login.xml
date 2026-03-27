@@ -66,8 +66,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: Yguix SCRIPT"
-                    android:textColor="#7A3000"
+                    android:text="BY: Yguix"
+                    android:textColor="#B700FF"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
                     android:textStyle="bold"
@@ -76,8 +76,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Yguix SCRIPT"
-                    android:textColor="#FF6B00"
+                    android:text="Yguix"
+                    android:textColor="#B700FF"
                     android:textSize="42sp"
                     android:textStyle="bold"
                     android:gravity="center" />
@@ -86,59 +86,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="BYPASS  ·  BYPASS Yguix"
-                    android:textColor="#5A2000"
+                    android:textColor="#00FF41"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
                     android:layout_marginTop="4dp" />
-
-            </LinearLayout>
-
-            <!-- COLOR SELECTOR -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:padding="12dp"
-                android:background="#120800"
-                android:layout_marginBottom="12dp">
-
-                <Button
-                    android:id="@+id/btnColorGreen"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/color_btn_green"
-                    android:text="🟢"
-                    android:textSize="20sp"
-                    android:layout_margin="6dp" />
-
-                <Button
-                    android:id="@+id/btnColorPurple"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/color_btn_purple"
-                    android:text="🟣"
-                    android:textSize="20sp"
-                    android:layout_margin="6dp" />
-
-                <Button
-                    android:id="@+id/btnColorBlue"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/color_btn_blue"
-                    android:text="🔵"
-                    android:textSize="20sp"
-                    android:layout_margin="6dp" />
-
-                <Button
-                    android:id="@+id/btnColorRed"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:background="@drawable/color_btn_red"
-                    android:text="🔴"
-                    android:textSize="20sp"
-                    android:layout_margin="6dp" />
 
             </LinearLayout>
 
@@ -155,7 +107,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ACESSO COM KEY"
-                    android:textColor="#FF6B00"
+                    android:textColor="#B700FF"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.2"
@@ -175,7 +127,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="HIDE STREAM"
-                        android:textColor="#FF6B00"
+                        android:textColor="#B700FF"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
@@ -204,8 +156,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
-                    android:textColor="#FF6B00"
-                    android:textColorHint="#3A1500"
+                    android:textColor="#00FF41"
+                    android:textColorHint="#1A3300"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -257,7 +209,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#FF6B00"
+                    android:textColor="#B700FF"
                     android:textSize="11sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -271,7 +223,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#FF6B00"
+                    android:indeterminateTint="#B700FF"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -302,7 +254,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#FF6B00"
+                    android:textColor="#00FF41"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace"
@@ -324,8 +276,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Yguix SCRIPT  ·  BYPASS Yguix"
-                android:textColor="#3A1000"
+                android:text="Yguix  ·  BYPASS Yguix"
+                android:textColor="#00FF41"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp" />
