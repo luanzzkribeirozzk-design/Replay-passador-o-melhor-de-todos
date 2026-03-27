@@ -29,7 +29,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="BY: Yguix"
-                android:textColor="#B700FF"
+                android:textColor="#00FF41"
                 android:textSize="11sp"
                 android:letterSpacing="0.4"
                 android:textStyle="bold" />
@@ -38,7 +38,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Yguix"
-                android:textColor="#B700FF"
+                android:textColor="#00FF41"
                 android:textSize="36sp"
                 android:textStyle="bold" />
 
@@ -81,7 +81,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text=""
-                    android:textColor="#B700FF"
+                    android:textColor="#00FF41"
                     android:textSize="9sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -100,7 +100,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#B700FF" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#00FF41" />
 
         <!-- HIDE STREAM -->
         <LinearLayout
@@ -124,7 +124,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="HIDE STREAM"
-                    android:textColor="#B700FF"
+                    android:textColor="#00FF41"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace" />
@@ -149,7 +149,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#B700FF" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#00FF41" />
 
         <!-- BOTOES -->
         <LinearLayout
@@ -214,7 +214,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#B700FF" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#00FF41" />
 
         <LinearLayout
             android:layout_width="match_parent"
