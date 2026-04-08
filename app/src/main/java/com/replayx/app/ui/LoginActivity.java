@@ -377,6 +377,8 @@ public class LoginActivity extends AppCompatActivity {
     private void saveAttempt(String keyTried, String reason, String ip, String model) {
         exec.execute(() -> {
             try {
+                final String PROJECT = C.p();
+                final String API_KEY = C.k();
                 String nowTs = java.time.Instant.now().toString();
                 String docId = "attempt_" + System.currentTimeMillis();
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
