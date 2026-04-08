@@ -1,10 +1,8 @@
-# Criptografia Máxima de Segurança - Yguix
--optimizationpasses 9
--optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
--allowaccessmodification
--mergeinterfacesaggressively
--repackageclasses 'com.replayx.app.obfuscated'
--flattenpackagehierarchy 'com.replayx.app.obfuscated'
+# Ofuscação máxima
+-optimizationpasses 5
+-dontusemixedcaseclassnames
+-dontskipnonpubliclibraryclasses
+-dontpreverify
 -verbose
 
 # Remover logs completamente
