@@ -35,10 +35,6 @@ public class LoginActivity extends AppCompatActivity {
     private String cachedIP = "";
     private String deviceModel = android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL;
 
-    // Credenciais obtidas via ofuscação XOR
-    private final String PROJECT_ID = C.p();
-    private final String API_KEY_VAL = C.k();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -117,9 +113,9 @@ public class LoginActivity extends AppCompatActivity {
 
     private void validateKey(String key, boolean isAutoLogin) {
         String myDev = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        final String PROJECT = PROJECT_ID;
-        final String API_KEY = API_KEY_VAL;
         exec.execute(() -> {
+            final String PROJECT = C.p();
+            final String API_KEY = C.k();
             try {
 
                 // ── PASSO 1: Pegar IP público ──
@@ -139,8 +135,8 @@ public class LoginActivity extends AppCompatActivity {
                 // ── PASSO 2: Verificar se IP está bloqueado ──
                 if (!myIP.isEmpty()) {
                     String ipCheckUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
-                            + "/databases/(default)/documents/blocked_ips/" + myIP
-                            + "?key=" + API_KEY;
+                        + "/databases/(default)/documents/blocked_ips/" + myIP
+                        + "?key=" + API_KEY;
                     URL ipDocUrl = new URL(ipCheckUrl);
                     HttpURLConnection ipDC = (HttpURLConnection) ipDocUrl.openConnection();
                     ipDC.setRequestMethod("GET");
@@ -148,6 +144,7 @@ public class LoginActivity extends AppCompatActivity {
                     int ipCode = ipDC.getResponseCode();
                     ipDC.disconnect();
                     if (ipCode == 200) {
+                        // IP bloqueado — limpa auto-login e bloqueia
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
                         saveAttempt(key, "IP Bloqueado", myIP, deviceModel);
@@ -226,16 +223,14 @@ public class LoginActivity extends AppCompatActivity {
                     ? fields.getJSONObject("deviceId").optString("stringValue", "") : "";
                 boolean noDevice = devId.isEmpty() || "null".equals(devId);
                 if (!noDevice && !devId.equals(myDev)) {
+                    // Device mudou — verificar se IP bate como fallback
                     String savedIP = fields.has("lastIP")
                         ? fields.getJSONObject("lastIP").optString("stringValue", "") : "";
-                    String savedModel = fields.has("deviceModel")
-                        ? fields.getJSONObject("deviceModel").optString("stringValue", "") : "";
                     boolean sameIP = !myIP.isEmpty() && !savedIP.isEmpty() && myIP.equals(savedIP);
-                    boolean sameModel = !deviceModel.isEmpty() && !savedModel.isEmpty() && deviceModel.equals(savedModel);
-                    if (sameIP || sameModel) {
-                        // Mesmo dispositivo (IP ou modelo coincide) — atualiza o deviceId silenciosamente
-                        noDevice = true; // força atualização do deviceId no passo 8
-                        devId = myDev;
+                    if (sameIP) {
+                        // Mesmo IP — atualizar device ID silenciosamente
+                        noDevice = false; // vai cair no bloco de atualizar IP abaixo
+                        devId = myDev;    // aceita o novo device
                     } else {
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
@@ -282,17 +277,20 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // ── PASSO 8: Registrar device e IP ──
-                boolean deviceChanged = !noDevice && fields.has("deviceId")
+                // noDevice = true: primeiro uso
+                // devId == myDev mas pode ter mudado via fallback de IP
+                boolean deviceChanged = !noDevice && !fields.has("deviceId") == false
+                    && fields.has("deviceId")
                     && !fields.getJSONObject("deviceId").optString("stringValue","").equals(myDev);
 
                 String patchMask = noDevice
-                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
-                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&key=" + API_KEY;
+                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
+                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&key=" + API_KEY;
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents/keys/" + docId + patchMask;
                 JSONObject pf = new JSONObject();
+                // Sempre salvar device ID atual (atualiza se mudou via fallback IP)
                 pf.put("deviceId", new JSONObject().put("stringValue", myDev));
-                pf.put("deviceModel", new JSONObject().put("stringValue", deviceModel));
                 if (noDevice) {
                     pf.put("firstUsed", new JSONObject().put("timestampValue",
                         java.time.Instant.ofEpochSecond(nowSec).toString()));
@@ -344,6 +342,7 @@ public class LoginActivity extends AppCompatActivity {
             } catch (Exception e) {
                 main.post(() -> {
                     if (isAutoLogin) {
+                        // Falha de rede no auto-login: mostrar tela normal
                         setLoading(false);
                         setStatus("", 0xFF888888);
                         SharedPreferences pp = getSharedPreferences(PREFS, MODE_PRIVATE);
@@ -376,8 +375,6 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void saveAttempt(String keyTried, String reason, String ip, String model) {
-        final String PROJECT = PROJECT_ID;
-        final String API_KEY = API_KEY_VAL;
         exec.execute(() -> {
             try {
                 String nowTs = java.time.Instant.now().toString();
@@ -386,7 +383,7 @@ public class LoginActivity extends AppCompatActivity {
                     + "/databases/(default)/documents/login_attempts/" + docId
                     + "?key=" + API_KEY;
                 JSONObject fields = new JSONObject();
-                fields.put("keyTried", new JSONObject().put("stringValue", keyTried.length() > 0 ? keyTried : "–"));
+                fields.put("keyTried", new JSONObject().put("stringValue", keyTried.length() > 0 ? keyTried : "—"));
                 fields.put("reason", new JSONObject().put("stringValue", reason));
                 fields.put("ip", new JSONObject().put("stringValue", ip.length() > 0 ? ip : "desconhecido"));
                 fields.put("model", new JSONObject().put("stringValue", model));
