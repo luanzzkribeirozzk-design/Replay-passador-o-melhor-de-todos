@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0010">
+    android:background="#020810">
 
     <!-- BACKGROUND IMAGE -->
     <ImageView
@@ -74,8 +74,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: VOLPP SENSI"
-                    android:textColor="#E0AAFF"
+                    android:text="BY: YGLN"
+                    android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
                     android:textStyle="bold"
@@ -84,10 +84,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Volpp Sensi"
+                    android:text="YGLN"
                     android:textColor="#FFFFFF"
                     android:textSize="42sp"
-                    android:shadowColor="#BF00FF"
+                    android:shadowColor="#00FF88"
                     android:shadowDx="0"
                     android:shadowDy="0"
                     android:shadowRadius="12"
@@ -97,8 +97,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  BYPASS VOLPP SENSI"
-                    android:textColor="#D0AAFF"
+                    android:text="BYPASS  ·  BYPASS YGLN"
+                    android:textColor="#CCFFEE"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
@@ -119,7 +119,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ACESSO COM KEY"
-                    android:textColor="#BF00FF"
+                    android:textColor="#00FF88"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.2"
@@ -139,7 +139,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="HIDE STREAM"
-                        android:textColor="#BF00FF"
+                        android:textColor="#00FF88"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
@@ -157,7 +157,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
-                    android:textColor="#D0AAFF"
+                    android:textColor="#CCFFEE"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -169,7 +169,7 @@
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#4A2080"
+                    android:textColorHint="#005533"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -195,7 +195,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Lembrar key"
-                        android:textColor="#E0AAFF"
+                        android:textColor="#FFFFFF"
                         android:textSize="12sp"
                         android:fontFamily="monospace"
                         android:layout_marginStart="10dp" />
@@ -221,7 +221,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#BF00FF"
+                    android:textColor="#00FF88"
                     android:textSize="11sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -235,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#BF00FF"
+                    android:indeterminateTint="#00FF88"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -255,7 +255,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TEMPO RESTANTE"
-                    android:textColor="#D0AAFF"
+                    android:textColor="#CCFFEE"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -266,7 +266,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#BF00FF"
+                    android:textColor="#00FF88"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace"
@@ -277,7 +277,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#D0AAFF"
+                    android:textColor="#CCFFEE"
                     android:textSize="10sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -288,7 +288,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Volpp Sensi  ·  BYPASS VOLPP SENSI"
+                android:text="YGLN  ·  BYPASS YGLN"
                 android:textColor="#3A1000"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
