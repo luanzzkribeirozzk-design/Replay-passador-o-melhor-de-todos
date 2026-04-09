@@ -1,14 +1,12 @@
-# === OFUSCAÇÃO MÁXIMA ===
 -optimizationpasses 7
 -dontusemixedcaseclassnames
 -dontskipnonpubliclibraryclasses
 -dontpreverify
--verbose
 -allowaccessmodification
 -mergeinterfacesaggressively
 -overloadaggressively
 
-# Remover TODOS os logs
+# Remove TODOS os logs - ninguém vê nada no logcat
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
@@ -23,11 +21,11 @@
     public void print(...);
 }
 
-# Remover stack traces e source info
+# Remove stack trace e nome dos arquivos fonte
 -renamesourcefileattribute x
--keepattributes !SourceFile,!LineNumberTable,!LocalVariable*,!SourceDir
+-keepattributes !SourceFile,!LineNumberTable,!LocalVariable*
 
-# Manter só o mínimo necessário
+# Manter só o necessário
 -keep public class com.replayx.app.ui.LoginActivity { public *; }
 -keep public class com.replayx.app.ui.MainActivity { public *; }
 -keep public class com.replayx.app.ui.ParticleView { public *; }
