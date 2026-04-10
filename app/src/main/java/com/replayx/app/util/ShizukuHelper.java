@@ -5,43 +5,92 @@ public class ShizukuHelper {
     public static String runMaxToNormal() {
         String src = "/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays";
         String dst = "/storage/emulated/0/Android/data/com.dts.freefireth/files/MReplays";
-        StringBuilder sb = new StringBuilder();
-        sb.append("mkdir -p ").append(dst).append("; ");
-        sb.append("BIN=$(ls -t ").append(src).append("/*.bin 2>/dev/null | head -n 1); ");
-        sb.append("JSON=$(ls -t ").append(src).append("/*.json 2>/dev/null | head -n 1); ");
-        sb.append("if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; ");
-        sb.append("BNAME=$(basename \"$BIN\"); ");
-        sb.append("JNAME=$(basename \"$JSON\"); ");
-        sb.append("cp -f \"$BIN\" ").append(dst).append("/$BNAME; ");
-        sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
-        sb.append("cp -f \"$JSON\" ").append(dst).append("/$JNAME; ");
-        sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
-        // Substituir versao 2.x.x por 1.122.1 que o FF Normal aceita
-        sb.append("sed -i 's/\"Version\":\"2\\.[^\"]*\"/\"Version\":\"1.122.1\"/g' ").append(dst).append("/$JNAME; ");
-        // Confirmar substituicao
-        sb.append("echo VER=$(grep -o '\"Version\":\"[^\"]*\"' ").append(dst).append("/$JNAME); ");
-        sb.append("echo COPIADO_OK");
-        return run(sb.toString());
+
+        // Script robusto:
+        // 1. Cria pasta destino
+        // 2. Pega o replay mais recente do MAX
+        // 3. Limpa pasta destino (remove replays antigos que podem conflitar)
+        // 4. Copia bin + json com mesmo nome
+        // 5. Corrige Version no JSON (MAX usa 2.x, Normal aceita 1.x)
+        // 6. Corrige AppId no JSON (freefiremax -> freefireth)
+        // 7. Ajusta permissoes
+
+        String cmd =
+            "SRC=\"" + src + "\"; " +
+            "DST=\"" + dst + "\"; " +
+            "mkdir -p \"$DST\"; " +
+
+            // Pegar arquivo mais recente
+            "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
+            "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
+            "if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; " +
+
+            // Nome dos arquivos
+            "BNAME=$(basename \"$BIN\"); " +
+            "JNAME=$(basename \"$JSON\"); " +
+
+            // Limpar pasta destino antes de copiar (evita conflito de replays antigos)
+            "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
+
+            // Copiar bin
+            "cp -f \"$BIN\" \"$DST/$BNAME\"; " +
+            "chmod 666 \"$DST/$BNAME\"; " +
+
+            // Copiar json
+            "cp -f \"$JSON\" \"$DST/$JNAME\"; " +
+            "chmod 666 \"$DST/$JNAME\"; " +
+
+            // Corrigir Version: 2.x.x -> 1.122.1
+            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"1.122.1\"/g' \"$DST/$JNAME\"; " +
+
+            // Corrigir AppId: freefiremax -> freefireth
+            "sed -i 's/com\\.dts\\.freefiremax/com.dts.freefireth/g' \"$DST/$JNAME\"; " +
+
+            // Corrigir GameVersion se existir (alguns jsons tem campo separado)
+            "sed -i 's/\"GameVersion\":\"[^\"]*\"/\"GameVersion\":\"1.122.1\"/g' \"$DST/$JNAME\"; " +
+
+            // Confirmar
+            "VER=$(grep -o '\"Version\":\"[^\"]*\"' \"$DST/$JNAME\" | head -n 1); " +
+            "echo \"VER=$VER\"; " +
+            "echo COPIADO_OK";
+
+        return run(cmd);
     }
 
     public static String runNormalToMax() {
         String src = "/storage/emulated/0/Android/data/com.dts.freefireth/files/MReplays";
         String dst = "/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays";
-        StringBuilder sb = new StringBuilder();
-        sb.append("mkdir -p ").append(dst).append("; ");
-        sb.append("BIN=$(ls -t ").append(src).append("/*.bin 2>/dev/null | head -n 1); ");
-        sb.append("JSON=$(ls -t ").append(src).append("/*.json 2>/dev/null | head -n 1); ");
-        sb.append("if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; ");
-        sb.append("BNAME=$(basename \"$BIN\"); ");
-        sb.append("cp -f \"$BIN\" ").append(dst).append("/$BNAME; ");
-        sb.append("chmod 666 ").append(dst).append("/$BNAME; ");
-        sb.append("if [ -n \"$JSON\" ]; then ");
-        sb.append("JNAME=$(basename \"$JSON\"); ");
-        sb.append("cp -f \"$JSON\" ").append(dst).append("/$JNAME; ");
-        sb.append("chmod 666 ").append(dst).append("/$JNAME; ");
-        sb.append("fi; ");
-        sb.append("echo COPIADO_OK");
-        return run(sb.toString());
+
+        String cmd =
+            "SRC=\"" + src + "\"; " +
+            "DST=\"" + dst + "\"; " +
+            "mkdir -p \"$DST\"; " +
+
+            "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
+            "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
+            "if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; " +
+
+            "BNAME=$(basename \"$BIN\"); " +
+            "JNAME=$(basename \"$JSON\"); " +
+
+            // Limpar destino
+            "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
+
+            // Copiar bin
+            "cp -f \"$BIN\" \"$DST/$BNAME\"; " +
+            "chmod 666 \"$DST/$BNAME\"; " +
+
+            // Copiar json se existir
+            "if [ -n \"$JSON\" ]; then " +
+            "cp -f \"$JSON\" \"$DST/$JNAME\"; " +
+            "chmod 666 \"$DST/$JNAME\"; " +
+            // Corrigir AppId: freefireth -> freefiremax
+            "sed -i 's/com\\.dts\\.freefireth/com.dts.freefiremax/g' \"$DST/$JNAME\"; " +
+            "fi; " +
+
+            "echo COPIADO_OK";
+
+        return run(cmd);
     }
 
     public static String run(String cmd) {
