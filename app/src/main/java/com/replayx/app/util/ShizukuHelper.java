@@ -40,14 +40,14 @@ public class ShizukuHelper {
             "cp -f \"$JSON\" \"$DST/$JNAME\"; " +
             "chmod 666 \"$DST/$JNAME\"; " +
 
-            // Corrigir Version: 2.x.x -> 1.122.1
-            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"1.122.1\"/g' \"$DST/$JNAME\"; " +
+            // Corrigir Version: 2.x.x -> 1.123.1
+            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"1.123.1\"/g' \"$DST/$JNAME\"; " +
 
             // Corrigir AppId: freefiremax -> freefireth
             "sed -i 's/com\\.dts\\.freefiremax/com.dts.freefireth/g' \"$DST/$JNAME\"; " +
 
             // Corrigir GameVersion se existir (alguns jsons tem campo separado)
-            "sed -i 's/\"GameVersion\":\"[^\"]*\"/\"GameVersion\":\"1.122.1\"/g' \"$DST/$JNAME\"; " +
+            "sed -i 's/\"GameVersion\":\"[^\"]*\"/\"GameVersion\":\"1.123.1\"/g' \"$DST/$JNAME\"; " +
 
             // Confirmar
             "VER=$(grep -o '\"Version\":\"[^\"]*\"' \"$DST/$JNAME\" | head -n 1); " +
@@ -86,6 +86,8 @@ public class ShizukuHelper {
             "chmod 666 \"$DST/$JNAME\"; " +
             // Corrigir AppId: freefireth -> freefiremax
             "sed -i 's/com\\.dts\\.freefireth/com.dts.freefiremax/g' \"$DST/$JNAME\"; " +
+            // Corrigir Version para FF MAX
+            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"2.123.1\"/g' \"$DST/$JNAME\"; " +
             "fi; " +
 
             "echo COPIADO_OK";
