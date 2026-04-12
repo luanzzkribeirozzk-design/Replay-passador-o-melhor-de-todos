@@ -299,9 +299,10 @@ public class LoginActivity extends AppCompatActivity {
                     && fields.has("deviceId")
                     && !fields.getJSONObject("deviceId").optString("stringValue","").equals(myDev);
 
+                // Mask inclui todos os campos que salvamos
                 String patchMask = noDevice
-                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
-                    : "?updateMask.fieldPaths=lastIP&updateMask.fieldPaths=deviceId&key=" + API_KEY;
+                    ? "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&updateMask.fieldPaths=firstUsed&updateMask.fieldPaths=lastIP&key=" + API_KEY
+                    : "?updateMask.fieldPaths=deviceId&updateMask.fieldPaths=deviceModel&updateMask.fieldPaths=lastIP&key=" + API_KEY;
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents/keys/" + docId + patchMask;
                 JSONObject pf = new JSONObject();
@@ -316,17 +317,23 @@ public class LoginActivity extends AppCompatActivity {
                 if (!myIP.isEmpty())
                     pf.put("lastIP", new JSONObject().put("stringValue", myIP));
                 if (pf.length() > 0) {
-                    JSONObject patchBody = new JSONObject();
-                    patchBody.put("fields", pf);
-                    URL pUrl = new URL(patchUrl);
-                    HttpURLConnection pc = (HttpURLConnection) pUrl.openConnection();
-                    pc.setRequestMethod("PATCH");
-                    pc.setRequestProperty("Content-Type", "application/json");
-                    pc.setDoOutput(true);
-                    pc.setConnectTimeout(10000);
-                    pc.getOutputStream().write(patchBody.toString().getBytes("UTF-8"));
-                    pc.getResponseCode();
-                    pc.disconnect();
+                    try {
+                        JSONObject patchBody = new JSONObject();
+                        patchBody.put("fields", pf);
+                        URL pUrl = new URL(patchUrl);
+                        HttpURLConnection pc = (HttpURLConnection) pUrl.openConnection();
+                        pc.setRequestMethod("PATCH");
+                        pc.setRequestProperty("Content-Type", "application/json");
+                        pc.setDoOutput(true);
+                        pc.setConnectTimeout(8000);
+                        pc.setReadTimeout(8000);
+                        pc.getOutputStream().write(patchBody.toString().getBytes("UTF-8"));
+                        int patchCode = pc.getResponseCode();
+                        pc.disconnect();
+                        // Se PATCH falhou, não bloqueia — segue para o sucesso mesmo assim
+                    } catch (Exception patchEx) {
+                        // Ignorar erro no PATCH — não impede o login
+                    }
                 }
 
                 // ── PASSO 9: Sucesso — salvar e entrar ──
