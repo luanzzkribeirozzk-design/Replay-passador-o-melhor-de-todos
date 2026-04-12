@@ -56,10 +56,11 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
         val keyUser = intent.getStringExtra("key_user") ?: ""
         val keyDays = intent.getIntExtra("key_days", 0)
+        val keyMinutes = intent.getIntExtra("key_minutes", 0)
         val firstUsedSec = intent.getLongExtra("key_first_used_sec", System.currentTimeMillis() / 1000L)
         val keyStatus = intent.getStringExtra("key_status") ?: "active"
         val pausedAtSec = intent.getLongExtra("key_paused_at_sec", 0L)
-        startKeyTimer(keyUser, keyDays, firstUsedSec, keyStatus, pausedAtSec)
+        startKeyTimer(keyUser, keyDays, keyMinutes, firstUsedSec, keyStatus, pausedAtSec)
 
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
@@ -72,8 +73,8 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
 
-    private fun startKeyTimer(user: String, days: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
-        val totalMs = days * 86400L * 1000L
+    private fun startKeyTimer(user: String, days: Int, minutes: Int, firstUsedSec: Long, status: String, pausedAtSec: Long) {
+        val totalMs = (days * 86400L + minutes * 60L) * 1000L
         val usedMs = if (status == "paused" && pausedAtSec > 0L)
             (pausedAtSec - firstUsedSec) * 1000L
         else
