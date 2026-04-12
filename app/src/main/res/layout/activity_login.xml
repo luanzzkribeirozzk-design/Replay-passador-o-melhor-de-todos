@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#020810">
+    android:background="#0A0000">
 
     <!-- BACKGROUND IMAGE -->
     <ImageView
@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: YGLN"
+                    android:text="BY: Waghton Modz"
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
@@ -84,10 +84,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="YGLN"
+                    android:text="Waghton Modz"
                     android:textColor="#FFFFFF"
                     android:textSize="42sp"
-                    android:shadowColor="#00CFFF"
+                    android:shadowColor="#FF0033"
                     android:shadowDx="0"
                     android:shadowDy="0"
                     android:shadowRadius="12"
@@ -97,8 +97,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  BYPASS YGLN"
-                    android:textColor="#AADDFF"
+                    android:text="BYPASS  ·  Waghton Modz"
+                    android:textColor="#FF9900"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
@@ -119,7 +119,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="ACESSO COM KEY"
-                    android:textColor="#00CFFF"
+                    android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.2"
@@ -139,7 +139,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="HIDE STREAM"
-                        android:textColor="#00CFFF"
+                        android:textColor="#FFFFFF"
                         android:textSize="11sp"
                         android:textStyle="bold"
                         android:fontFamily="monospace"
@@ -157,7 +157,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
-                    android:textColor="#AADDFF"
+                    android:textColor="#FF9900"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -169,7 +169,7 @@
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#334466"
+                    android:textColorHint="#440000"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -221,7 +221,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#00CFFF"
+                    android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -235,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#00FF88"
+                    android:indeterminateTint="#FF6600"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -255,7 +255,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TEMPO RESTANTE"
-                    android:textColor="#AADDFF"
+                    android:textColor="#FF9900"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -266,7 +266,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#00CFFF"
+                    android:textColor="#FFFFFF"
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace"
@@ -277,7 +277,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#AADDFF"
+                    android:textColor="#FF9900"
                     android:textSize="10sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -288,7 +288,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="YGLN  ·  BYPASS YGLN"
+                android:text="Waghton Modz  ·  Waghton Modz"
                 android:textColor="#3A1000"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
