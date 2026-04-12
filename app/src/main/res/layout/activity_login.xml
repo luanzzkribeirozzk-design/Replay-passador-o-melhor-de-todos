@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A0000">
+    android:background="#0A000F">
 
     <!-- BACKGROUND IMAGE -->
     <ImageView
@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: Waghton Modz"
+                    android:text="BY: VOLPP SENSI"
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
@@ -84,10 +84,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Waghton Modz"
+                    android:text="Volpp Sensi"
                     android:textColor="#FFFFFF"
                     android:textSize="42sp"
-                    android:shadowColor="#FF0033"
+                    android:shadowColor="#BF00FF"
                     android:shadowDx="0"
                     android:shadowDy="0"
                     android:shadowRadius="12"
@@ -97,8 +97,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  Waghton Modz"
-                    android:textColor="#FF9900"
+                    android:text="BYPASS  ·  VOLPP SENSI"
+                    android:textColor="#7B00AA"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
                     android:gravity="center"
@@ -157,7 +157,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
-                    android:textColor="#FF9900"
+                    android:textColor="#7B00AA"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -169,7 +169,7 @@
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#440000"
+                    android:textColorHint="#220033"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -235,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#FF6600"
+                    android:indeterminateTint="#9B00CC"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -255,7 +255,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TEMPO RESTANTE"
-                    android:textColor="#FF9900"
+                    android:textColor="#7B00AA"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -277,7 +277,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#FF9900"
+                    android:textColor="#7B00AA"
                     android:textSize="10sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -288,8 +288,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Waghton Modz  ·  Waghton Modz"
-                android:textColor="#3A1000"
+                android:text="Volpp Sensi  ·  Volpp Sensi"
+                android:textColor="#220033"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp" />
