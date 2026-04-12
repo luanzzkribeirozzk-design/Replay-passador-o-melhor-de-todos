@@ -112,8 +112,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void validateKey(String key, boolean isAutoLogin) {
-        String myDev = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         exec.execute(() -> {
+            // ID estável: se ANDROID_ID for inválido, usa modelo+serial como fallback
+            String rawId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+            if (rawId == null || rawId.length() < 8 || rawId.equals("9774d56d682e549c")) {
+                rawId = android.os.Build.MANUFACTURER + android.os.Build.MODEL;
+            }
+            final String myDev = rawId;
             final String PROJECT = C.p();
             final String API_KEY = C.k();
             try {
@@ -223,14 +228,19 @@ public class LoginActivity extends AppCompatActivity {
                     ? fields.getJSONObject("deviceId").optString("stringValue", "") : "";
                 boolean noDevice = devId.isEmpty() || "null".equals(devId);
                 if (!noDevice && !devId.equals(myDev)) {
-                    // Device mudou — verificar se IP bate como fallback
+                    // Device ID mudou — tentar fallbacks antes de bloquear
                     String savedIP = fields.has("lastIP")
                         ? fields.getJSONObject("lastIP").optString("stringValue", "") : "";
+                    String savedModel = fields.has("deviceModel")
+                        ? fields.getJSONObject("deviceModel").optString("stringValue", "") : "";
+
                     boolean sameIP = !myIP.isEmpty() && !savedIP.isEmpty() && myIP.equals(savedIP);
-                    if (sameIP) {
-                        // Mesmo IP — atualizar device ID silenciosamente
-                        noDevice = false; // vai cair no bloco de atualizar IP abaixo
-                        devId = myDev;    // aceita o novo device
+                    boolean sameModel = !deviceModel.isEmpty() && !savedModel.isEmpty() && deviceModel.equals(savedModel);
+
+                    if (sameIP || sameModel) {
+                        // Mesmo IP ou mesmo modelo — aceitar e atualizar device ID
+                        noDevice = false;
+                        devId = myDev; // atualiza para o novo ID
                     } else {
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
@@ -289,8 +299,9 @@ public class LoginActivity extends AppCompatActivity {
                 String patchUrl = "https://firestore.googleapis.com/v1/projects/" + PROJECT
                     + "/databases/(default)/documents/keys/" + docId + patchMask;
                 JSONObject pf = new JSONObject();
-                // Sempre salvar device ID atual (atualiza se mudou via fallback IP)
+                // Sempre salvar device ID atual + modelo
                 pf.put("deviceId", new JSONObject().put("stringValue", myDev));
+                pf.put("deviceModel", new JSONObject().put("stringValue", deviceModel));
                 if (noDevice) {
                     pf.put("firstUsed", new JSONObject().put("timestampValue",
                         java.time.Instant.ofEpochSecond(nowSec).toString()));
