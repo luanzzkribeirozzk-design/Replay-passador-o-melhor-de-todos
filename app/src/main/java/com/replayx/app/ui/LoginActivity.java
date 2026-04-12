@@ -145,7 +145,7 @@ public class LoginActivity extends AppCompatActivity {
                     URL ipDocUrl = new URL(ipCheckUrl);
                     HttpURLConnection ipDC = (HttpURLConnection) ipDocUrl.openConnection();
                     ipDC.setRequestMethod("GET");
-                    ipDC.setConnectTimeout(8000); ipDC.setReadTimeout(8000);
+                    ipDC.setConnectTimeout(4000); ipDC.setReadTimeout(4000);
                     int ipCode = ipDC.getResponseCode();
                     ipDC.disconnect();
                     if (ipCode == 200) {
@@ -354,11 +354,13 @@ public class LoginActivity extends AppCompatActivity {
                         ed.putString(PREF_KEY, remember ? fKey : "");
                     }
                     ed.apply();
+                    hideSplash();
                     goMain(fUser, fDays, fMinutes, fFirst, fStatus, fPause);
                 });
 
             } catch (Exception e) {
                 main.post(() -> {
+                    hideSplash();
                     if (isAutoLogin) {
                         // Falha de rede no auto-login: mostrar tela normal
                         setLoading(false);
