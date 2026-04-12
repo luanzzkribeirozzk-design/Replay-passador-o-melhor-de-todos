@@ -64,10 +64,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) { speak("YGLN bypass ativado"); startTransfer("maxToNormal") }
+            if (checkShizuku()) { speak("Waghton Modz bypass ativado"); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) { speak("YGLN bypass ativado"); startTransfer("normalToMax") }
+            if (checkShizuku()) { speak("Waghton Modz bypass ativado"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
