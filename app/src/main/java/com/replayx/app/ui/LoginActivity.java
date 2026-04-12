@@ -359,16 +359,19 @@ public class LoginActivity extends AppCompatActivity {
                 });
 
             } catch (Exception e) {
+                // Limpar auto-login em qualquer exception para evitar loop
+                getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+                    .putBoolean(PREF_AUTO, false).apply();
                 main.post(() -> {
                     hideSplash();
+                    setLoading(false);
                     if (isAutoLogin) {
-                        // Falha de rede no auto-login: mostrar tela normal
-                        setLoading(false);
-                        setStatus("", 0xFF888888);
+                        // Falha no auto-login: mostrar formulário limpo
+                        setStatus("Faça login novamente", 0xFFAAAAAA);
                         SharedPreferences pp = getSharedPreferences(PREFS, MODE_PRIVATE);
                         setupForm(pp);
                     } else {
-                        fail("[ERR] " + e.getMessage());
+                        setStatus("[ERR] " + e.getMessage(), 0xFFFF4444);
                     }
                 });
             }
@@ -388,6 +391,9 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void fail(String msg) {
+        // Sempre limpa auto-login para não ficar em loop
+        getSharedPreferences(PREFS, MODE_PRIVATE).edit()
+            .putBoolean(PREF_AUTO, false).apply();
         main.post(() -> {
             hideSplash();
             setLoading(false);
