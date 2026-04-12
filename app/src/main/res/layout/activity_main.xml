@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#020810">
+    android:background="#0A0000">
 
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BY: YGLN"
+                android:text="BY: Waghton Modz"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:letterSpacing="0.4"
@@ -45,8 +45,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="YGLN"
-                android:textColor="#00CFFF"
+                android:text="Waghton Modz"
+                android:textColor="#FFFFFF"
                 android:textSize="36sp"
                 android:textStyle="bold" />
 
@@ -60,8 +60,8 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="BYPASS  ·  YGLN"
-                    android:textColor="#AADDFF"
+                    android:text="BYPASS  ·  Waghton Modz"
+                    android:textColor="#FF9900"
                     android:textSize="10sp" />
 
                 <TextView
@@ -89,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text=""
-                    android:textColor="#AADDFF"
+                    android:textColor="#FF9900"
                     android:textSize="9sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -99,7 +99,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="00d 00h 00m 00s"
-                    android:textColor="#00CFFF"
+                    android:textColor="#FFFFFF"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace" />
@@ -108,7 +108,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#00CFFF" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#FF0033" />
 
         <!-- HIDE STREAM -->
         <LinearLayout
@@ -132,7 +132,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="HIDE STREAM"
-                    android:textColor="#00CFFF"
+                    android:textColor="#FFFFFF"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:fontFamily="monospace" />
@@ -157,7 +157,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#003322" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#330000" />
 
         <!-- BOTOES -->
         <LinearLayout
@@ -214,7 +214,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
                 android:text="Limpar logs"
-                android:textColor="#00CFFF"
+                android:textColor="#FFFFFF"
                 android:textSize="12sp"
                 android:textStyle="bold"
                 android:background="@drawable/btn_clear"
@@ -222,7 +222,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#003322" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#330000" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -238,7 +238,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="root@ygln:~$ bypass_log"
+                android:text="root@waghton:~$ bypass_log"
                 android:textColor="#00AA22"
                 android:textSize="10sp"
                 android:fontFamily="monospace" />
@@ -267,7 +267,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="monospace"
                 android:text=""
-                android:textColor="#00CFFF"
+                android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:lineSpacingExtra="2dp" />
 
@@ -283,8 +283,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="YGLN  ·  BYPASS YGLN"
-                android:textColor="#AADDFF"
+                android:text="Waghton Modz  ·  Waghton Modz"
+                android:textColor="#FF9900"
                 android:textSize="9sp" />
 
         </LinearLayout>
