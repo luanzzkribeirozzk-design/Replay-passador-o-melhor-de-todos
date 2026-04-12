@@ -255,12 +255,18 @@ public class LoginActivity extends AppCompatActivity {
                 long firstSec = nowSec;
                 long pauseSec = 0L;
                 int days = 0;
+                int minutes = 0;
                 String user = "";
 
                 if (fields.has("days")) {
                     Object dv = fields.getJSONObject("days").opt("integerValue");
                     if (dv != null) days = Integer.parseInt(dv.toString());
                 }
+                if (fields.has("minutes")) {
+                    Object mv = fields.getJSONObject("minutes").opt("integerValue");
+                    if (mv != null) minutes = Integer.parseInt(mv.toString());
+                }
+                long durationSec = (days * 86400L) + (minutes * 60L);
                 if (fields.has("user"))
                     user = fields.getJSONObject("user").optString("stringValue", "");
                 if (fields.has("firstUsed") && fields.getJSONObject("firstUsed").has("timestampValue")) {
@@ -273,11 +279,11 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
                 // ── PASSO 7: Verificar expiração ──
-                if (fields.has("firstUsed")) {
+                if (fields.has("firstUsed") && durationSec > 0) {
                     long usedSec = ("paused".equals(status) && pauseSec > 0)
                         ? (pauseSec - firstSec) : (nowSec - firstSec);
-                    long remain = days - (usedSec / 86400L);
-                    if (remain <= 0) {
+                    long remainSec = durationSec - usedSec;
+                    if (remainSec <= 0) {
                         getSharedPreferences(PREFS, MODE_PRIVATE).edit()
                             .putBoolean(PREF_AUTO, false).apply();
                         saveAttempt(key, "Key expirada", myIP, deviceModel);
@@ -326,6 +332,7 @@ public class LoginActivity extends AppCompatActivity {
                 // ── PASSO 9: Sucesso — salvar e entrar ──
                 final long fFirst = firstSec, fPause = pauseSec;
                 final int fDays = days;
+                final int fMinutes = minutes;
                 final String fUser = user, fStatus = status, fKey = key;
 
                 if (!isAutoLogin) {
@@ -347,7 +354,7 @@ public class LoginActivity extends AppCompatActivity {
                         ed.putString(PREF_KEY, remember ? fKey : "");
                     }
                     ed.apply();
-                    goMain(fUser, fDays, fFirst, fStatus, fPause);
+                    goMain(fUser, fDays, fMinutes, fFirst, fStatus, fPause);
                 });
 
             } catch (Exception e) {
@@ -366,10 +373,11 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void goMain(String user, int days, long first, String status, long paused) {
+    private void goMain(String user, int days, int minutes, long first, String status, long paused) {
         Intent i = new Intent(this, MainActivity.class);
         i.putExtra("key_user", user);
         i.putExtra("key_days", days);
+        i.putExtra("key_minutes", minutes);
         i.putExtra("key_first_used_sec", first);
         i.putExtra("key_status", status);
         i.putExtra("key_paused_at_sec", paused);
