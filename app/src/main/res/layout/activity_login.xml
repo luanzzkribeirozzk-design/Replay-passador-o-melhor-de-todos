@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A000F">
+    android:background="#08000F">
 
     <!-- BACKGROUND IMAGE -->
     <ImageView
@@ -74,7 +74,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: VOLPP SENSI"
+                    android:text="BY: RAVENA MOD"
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:letterSpacing="0.4"
@@ -84,10 +84,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Volpp Sensi"
+                    android:text="Ravena Mod"
                     android:textColor="#FFFFFF"
                     android:textSize="42sp"
-                    android:shadowColor="#BF00FF"
+                    android:shadowColor="#DD00FF"
                     android:shadowDx="0"
                     android:shadowDy="0"
                     android:shadowRadius="12"
@@ -97,7 +97,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  VOLPP SENSI"
+                    android:text="BYPASS  ·  RAVENA MOD"
                     android:textColor="#7B00AA"
                     android:textSize="10sp"
                     android:letterSpacing="0.2"
@@ -288,7 +288,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Volpp Sensi  ·  Volpp Sensi"
+                android:text="Ravena Mod  ·  Ravena Mod"
                 android:textColor="#220033"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
