@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.ReplayX" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="colorPrimary">#BF00FF</item>
-        <item name="colorPrimaryVariant">#9B00CC</item>
+        <item name="colorPrimary">#CC00EE</item>
+        <item name="colorPrimaryVariant">#880099</item>
         <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#7B00AA</item>
+        <item name="colorSecondary">#AA00CC</item>
         <item name="colorOnSecondary">#FFFFFF</item>
-        <item name="android:statusBarColor">#0A000F</item>
-        <item name="android:navigationBarColor">#0A000F</item>
-        <item name="android:windowBackground">#0A000F</item>
+        <item name="android:statusBarColor">#08000F</item>
+        <item name="android:navigationBarColor">#08000F</item>
+        <item name="android:windowBackground">#08000F</item>
     </style>
 </resources>
