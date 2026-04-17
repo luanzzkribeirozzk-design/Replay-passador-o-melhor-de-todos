@@ -66,11 +66,11 @@ class ParticleView @JvmOverloads constructor(
             }
             when (p.type) {
                 0 -> {
-                    paint.color = Color.argb(p.alpha, 204, 0, 238)
+                    paint.color = Color.argb(p.alpha, 221, 0, 238)
                     canvas.drawCircle(p.x, p.y, p.size, paint)
                 }
                 1 -> {
-                    paint.color = Color.argb(p.alpha / 2, 136, 0, 170)
+                    paint.color = Color.argb(p.alpha / 2, 170, 0, 187)
                     paint.strokeWidth = 1f
                     canvas.drawLine(p.x, p.y, p.x + p.vx * 8, p.y + p.vy * 8, paint)
                 }
