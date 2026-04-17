@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#0A000F">
+    android:background="#08000F">
 
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BY: VOLPP SENSI"
+                android:text="BY: RAVENA MOD"
                 android:textColor="#FFFFFF"
                 android:textSize="11sp"
                 android:letterSpacing="0.4"
@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Volpp Sensi"
+                android:text="Ravena Mod"
                 android:textColor="#FFFFFF"
                 android:textSize="36sp"
                 android:textStyle="bold" />
@@ -60,7 +60,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="BYPASS  ·  VOLPP SENSI"
+                    android:text="BYPASS  ·  RAVENA MOD"
                     android:textColor="#7B00AA"
                     android:textSize="10sp" />
 
@@ -238,7 +238,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="root@volppsensi:~$ bypass_log"
+                android:text="root@ravena-script:~/ bypass_log"
                 android:textColor="#00AA22"
                 android:textSize="10sp"
                 android:fontFamily="monospace" />
@@ -283,7 +283,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Volpp Sensi  ·  Volpp Sensi"
+                android:text="Ravena Mod  ·  Ravena Mod"
                 android:textColor="#7B00AA"
                 android:textSize="9sp" />
 
