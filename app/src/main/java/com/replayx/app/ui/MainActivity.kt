@@ -65,10 +65,10 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         Shizuku.addBinderReceivedListenerSticky(binderReceived)
         Shizuku.addBinderDeadListener(binderDead)
         binding.btnBypassMaxToNormal.setOnClickListener {
-            if (checkShizuku()) { speak("Volpp Sensi bypass ativado"); startTransfer("maxToNormal") }
+            if (checkShizuku()) { speak("Ravena Mod bypass ativado"); startTransfer("maxToNormal") }
         }
         binding.btnBypassNormalToMax.setOnClickListener {
-            if (checkShizuku()) { speak("Volpp Sensi bypass ativado"); startTransfer("normalToMax") }
+            if (checkShizuku()) { speak("Ravena Mod bypass ativado"); startTransfer("normalToMax") }
         }
         binding.btnClearLog.setOnClickListener { clearLog() }
     }
