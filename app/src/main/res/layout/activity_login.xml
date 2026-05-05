@@ -56,6 +56,7 @@
         android:fillViewport="true">
 
         <LinearLayout
+            android:id="@+id/mainContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -65,12 +66,13 @@
 
             <!-- LOGO -->
             <LinearLayout
+                android:id="@+id/logoContainer"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="60dp"
-                android:layout_marginBottom="40dp">
+                android:layout_marginTop="80dp"
+                android:layout_marginBottom="50dp">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -87,23 +89,26 @@
                     android:layout_height="wrap_content"
                     android:text="DEV WILL"
                     android:textColor="#FFFFFF"
-                    android:textSize="48sp"
+                    android:textSize="54sp"
                     android:shadowColor="#CCFF00"
                     android:shadowDx="0"
                     android:shadowDy="0"
-                    android:shadowRadius="20"
+                    android:shadowRadius="30"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="-0.02"
                     android:textStyle="bold"
                     android:gravity="center" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS SYSTEM"
+                    android:text="PREMIUM BYPASS SYSTEM"
                     android:textColor="#CCFF00"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.3"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.5"
+                    android:fontFamily="monospace"
                     android:gravity="center"
-                    android:layout_marginTop="2dp" />
+                    android:layout_marginTop="4dp" />
 
             </LinearLayout>
 
@@ -125,7 +130,7 @@
                     android:textStyle="bold"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
-                    android:layout_marginBottom="16dp" />
+                    android:layout_marginBottom="24dp" />
 
                 <!-- HIDE STREAM -->
                 <LinearLayout
@@ -162,7 +167,7 @@
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
-                    android:layout_marginBottom="6dp" />
+                    android:layout_marginBottom="10dp" />
 
                 <EditText
                     android:id="@+id/etKey"
@@ -177,7 +182,7 @@
                     android:textSize="13sp"
                     android:inputType="text"
                     android:imeOptions="actionDone"
-                    android:layout_marginBottom="12dp" />
+                    android:layout_marginBottom="20dp" />
 
                 <!-- LEMBRAR KEY -->
                 <LinearLayout
@@ -207,15 +212,16 @@
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:text="ACESSAR PAINEL"
+                    android:layout_height="58dp"
+                    android:text="INICIAR BYPASS"
                     android:textColor="#000000"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.1"
                     android:background="@drawable/btn_primary"
-                    android:elevation="4dp"
-                    android:stateListAnimator="@null" />
+                    android:elevation="8dp"
+                    android:stateListAnimator="@null"
+                    android:layout_marginTop="10dp" />
 
                 <!-- ERRO -->
                 <TextView
