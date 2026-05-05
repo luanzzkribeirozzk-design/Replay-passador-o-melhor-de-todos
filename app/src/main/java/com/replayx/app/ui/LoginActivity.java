@@ -71,6 +71,19 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         setupForm(prefs);
+        
+        // Iniciar animação de pulsação na logo e no botão
+        try {
+            android.view.animation.Animation pulse = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.pulse);
+            findViewById(R.id.logoContainer).startAnimation(pulse);
+            binding.btnLogin.startAnimation(pulse);
+            
+            // Animação de entrada suave no container principal
+            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fade_in);
+            findViewById(R.id.mainContainer).startAnimation(fadeIn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void applyHideStream(boolean active) {
