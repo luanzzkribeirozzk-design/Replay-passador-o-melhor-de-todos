@@ -21,6 +21,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import com.replayx.app.security.C;
 import com.replayx.app.security.IntegrityCheck;
+import com.replayx.app.R;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -74,13 +77,15 @@ public class LoginActivity extends AppCompatActivity {
         
         // Iniciar animação de pulsação na logo e no botão
         try {
-            android.view.animation.Animation pulse = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.pulse);
-            findViewById(R.id.logoContainer).startAnimation(pulse);
+            Animation pulse = AnimationUtils.loadAnimation(this, R.anim.pulse);
+            View logoCont = findViewById(R.id.logoContainer);
+            if (logoCont != null) logoCont.startAnimation(pulse);
             binding.btnLogin.startAnimation(pulse);
             
             // Animação de entrada suave no container principal
-            android.view.animation.Animation fadeIn = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fade_in);
-            findViewById(R.id.mainContainer).startAnimation(fadeIn);
+            Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+            View mainCont = findViewById(R.id.mainContainer);
+            if (mainCont != null) mainCont.startAnimation(fadeIn);
         } catch (Exception e) {
             e.printStackTrace();
         }
