@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#08000F">
+    android:background="#000000">
 
     <!-- BACKGROUND IMAGE -->
     <ImageView
@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:src="@drawable/bg_volpp"
         android:scaleType="centerCrop"
-        android:alpha="0.7" />
+        android:alpha="0.5" />
 
 
     <!-- SPLASH SCREEN PRETA -->
@@ -69,41 +69,41 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:layout_marginTop="48dp"
-                android:layout_marginBottom="36dp">
+                android:layout_marginTop="60dp"
+                android:layout_marginBottom="40dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: RAVENA MOD"
-                    android:textColor="#FFFFFF"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.4"
+                    android:text="BY: DEV WILL"
+                    android:textColor="#CCFF00"
+                    android:textSize="12sp"
+                    android:letterSpacing="0.5"
                     android:textStyle="bold"
                     android:gravity="center" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ravena Mod"
+                    android:text="DEV WILL"
                     android:textColor="#FFFFFF"
-                    android:textSize="42sp"
-                    android:shadowColor="#DD00FF"
+                    android:textSize="48sp"
+                    android:shadowColor="#CCFF00"
                     android:shadowDx="0"
                     android:shadowDy="0"
-                    android:shadowRadius="12"
+                    android:shadowRadius="20"
                     android:textStyle="bold"
                     android:gravity="center" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BYPASS  ·  RAVENA MOD"
-                    android:textColor="#7B00AA"
-                    android:textSize="10sp"
-                    android:letterSpacing="0.2"
+                    android:text="BYPASS SYSTEM"
+                    android:textColor="#CCFF00"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.3"
                     android:gravity="center"
-                    android:layout_marginTop="4dp" />
+                    android:layout_marginTop="2dp" />
 
             </LinearLayout>
 
@@ -158,7 +158,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
-                    android:textColor="#7B00AA"
+                    android:textColor="#AAFF00"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -170,7 +170,7 @@
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#220033"
+                    android:textColorHint="#111100"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -208,12 +208,13 @@
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
-                    android:text="ENTRAR"
+                    android:text="ACESSAR PAINEL"
                     android:textColor="#000000"
-                    android:textSize="15sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.1"
                     android:background="@drawable/btn_primary"
+                    android:elevation="4dp"
                     android:stateListAnimator="@null" />
 
                 <!-- ERRO -->
@@ -236,7 +237,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:layout_marginTop="12dp"
-                    android:indeterminateTint="#9B00CC"
+                    android:indeterminateTint="#CCFF00"
                     android:visibility="gone" />
 
             </LinearLayout>
@@ -256,7 +257,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="TEMPO RESTANTE"
-                    android:textColor="#7B00AA"
+                    android:textColor="#AAFF00"
                     android:textSize="9sp"
                     android:letterSpacing="0.2"
                     android:fontFamily="monospace"
@@ -278,7 +279,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text=""
-                    android:textColor="#7B00AA"
+                    android:textColor="#AAFF00"
                     android:textSize="10sp"
                     android:fontFamily="monospace"
                     android:gravity="center"
@@ -289,8 +290,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ravena Mod  ·  Ravena Mod"
-                android:textColor="#220033"
+                android:text="DEV WILL  ·  DEV WILL"
+                android:textColor="#111100"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp" />
