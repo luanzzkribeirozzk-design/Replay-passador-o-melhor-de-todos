@@ -24,7 +24,7 @@ class ParticleView @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val chars = listOf("0","1","0","1","A","F","E","B","C","D","0","1")
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#CC00EE")
+        color = Color.parseColor("#CCFF00")
         textSize = 28f
         typeface = android.graphics.Typeface.MONOSPACE
     }
@@ -66,11 +66,11 @@ class ParticleView @JvmOverloads constructor(
             }
             when (p.type) {
                 0 -> {
-                    paint.color = Color.argb(p.alpha, 221, 0, 238)
+                    paint.color = Color.argb(p.alpha, 204, 255, 0)
                     canvas.drawCircle(p.x, p.y, p.size, paint)
                 }
                 1 -> {
-                    paint.color = Color.argb(p.alpha / 2, 170, 0, 187)
+                    paint.color = Color.argb(p.alpha / 2, 170, 255, 0)
                     paint.strokeWidth = 1f
                     canvas.drawLine(p.x, p.y, p.x + p.vx * 8, p.y + p.vy * 8, paint)
                 }
