@@ -12,39 +12,6 @@
         android:scaleType="centerCrop"
         android:alpha="0.5" />
 
-
-    <!-- SPLASH SCREEN PRETA -->
-    <FrameLayout
-        android:id="@+id/splashScreen"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#000000"
-        android:elevation="100dp"
-        android:visibility="visible"
-        android:clickable="true"
-        android:focusable="true">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:alpha="0.5">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="VERIFICANDO"
-                android:textColor="#222222"
-                android:textSize="10sp"
-                android:letterSpacing="0.4"
-                android:fontFamily="monospace" />
-
-        </LinearLayout>
-
-    </FrameLayout>
-
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
         android:layout_width="match_parent"
@@ -61,8 +28,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:padding="28dp"
-            android:minHeight="100dp">
+            android:padding="28dp">
 
             <!-- LOGO -->
             <LinearLayout
@@ -77,16 +43,6 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="BY: DEV WILL"
-                    android:textColor="#CCFF00"
-                    android:textSize="12sp"
-                    android:letterSpacing="0.5"
-                    android:textStyle="bold"
-                    android:gravity="center" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:text="DEV WILL"
                     android:textColor="#FFFFFF"
                     android:textSize="54sp"
@@ -95,7 +51,6 @@
                     android:shadowDy="0"
                     android:shadowRadius="30"
                     android:fontFamily="sans-serif-black"
-                    android:letterSpacing="-0.02"
                     android:textStyle="bold"
                     android:gravity="center" />
 
@@ -120,7 +75,6 @@
                 android:background="@drawable/card_login"
                 android:padding="20dp">
 
-                <!-- TITULO -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -128,11 +82,9 @@
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.2"
                     android:fontFamily="monospace"
                     android:layout_marginBottom="24dp" />
 
-                <!-- HIDE STREAM -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -147,25 +99,20 @@
                         android:text="HIDE STREAM"
                         android:textColor="#FFFFFF"
                         android:textSize="11sp"
-                        android:textStyle="bold"
-                        android:fontFamily="monospace"
-                        android:letterSpacing="0.1" />
+                        android:fontFamily="monospace" />
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/switchHideStreamLogin"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
-
                 </LinearLayout>
 
-                <!-- CAMPO KEY -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="KEY DE ACESSO"
                     android:textColor="#AAFF00"
                     android:textSize="9sp"
-                    android:letterSpacing="0.2"
                     android:fontFamily="monospace"
                     android:layout_marginBottom="10dp" />
 
@@ -175,7 +122,6 @@
                     android:layout_height="48dp"
                     android:background="@drawable/input_bg"
                     android:textColor="#FFFFFF"
-                    android:textColorHint="#111100"
                     android:hint="usuario>senha"
                     android:padding="12dp"
                     android:fontFamily="monospace"
@@ -184,7 +130,6 @@
                     android:imeOptions="actionDone"
                     android:layout_marginBottom="20dp" />
 
-                <!-- LEMBRAR KEY -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -205,10 +150,8 @@
                         android:textSize="12sp"
                         android:fontFamily="monospace"
                         android:layout_marginStart="10dp" />
-
                 </LinearLayout>
 
-                <!-- BOTAO ENTRAR -->
                 <Button
                     android:id="@+id/btnLogin"
                     android:layout_width="match_parent"
@@ -217,18 +160,15 @@
                     android:textColor="#000000"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.1"
                     android:background="@drawable/btn_primary"
                     android:elevation="8dp"
                     android:stateListAnimator="@null"
                     android:layout_marginTop="10dp" />
 
-                <!-- ERRO -->
                 <TextView
                     android:id="@+id/tvError"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=""
                     android:textColor="#FFFFFF"
                     android:textSize="11sp"
                     android:fontFamily="monospace"
@@ -236,7 +176,6 @@
                     android:layout_marginTop="12dp"
                     android:visibility="gone" />
 
-                <!-- LOADING -->
                 <ProgressBar
                     android:id="@+id/progressBar"
                     android:layout_width="wrap_content"
@@ -248,60 +187,34 @@
 
             </LinearLayout>
 
-            <!-- TIMER (aparece depois do login) -->
-            <LinearLayout
-                android:id="@+id/layoutTimer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/card_timer"
-                android:padding="16dp"
-                android:layout_marginTop="12dp"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="TEMPO RESTANTE"
-                    android:textColor="#AAFF00"
-                    android:textSize="9sp"
-                    android:letterSpacing="0.2"
-                    android:fontFamily="monospace"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tvTimer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="00d 00h 00m 00s"
-                    android:textColor="#FFFFFF"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:fontFamily="monospace"
-                    android:gravity="center" />
-
-                <TextView
-                    android:id="@+id/tvKeyUser"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textColor="#AAFF00"
-                    android:textSize="10sp"
-                    android:fontFamily="monospace"
-                    android:gravity="center"
-                    android:layout_marginTop="4dp" />
-
-            </LinearLayout>
-
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="DEV WILL  ·  DEV WILL"
-                android:textColor="#111100"
+                android:textColor="#222200"
                 android:textSize="9sp"
                 android:layout_marginTop="32dp"
                 android:layout_marginBottom="24dp" />
 
         </LinearLayout>
     </ScrollView>
+
+    <!-- SPLASH SCREEN PRETA -->
+    <FrameLayout
+        android:id="@+id/splashScreen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#000000"
+        android:elevation="100dp"
+        android:visibility="visible">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="VERIFICANDO"
+            android:textColor="#222222"
+            android:textSize="10sp"
+            android:fontFamily="monospace" />
+    </FrameLayout>
+
 </FrameLayout>
