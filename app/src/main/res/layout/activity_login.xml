@@ -10,7 +10,7 @@
         android:layout_height="match_parent"
         android:src="@drawable/bg_volpp"
         android:scaleType="centerCrop"
-        android:alpha="0.5" />
+        android:alpha="0.8" />
 
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
