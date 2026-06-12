@@ -4,99 +4,129 @@ import android.os.Build;
 
 public class ShizukuHelper {
 
-    private static final String FFM_PKG  = "com.dts.freefiremax";
-    private static final String FFN_PKG  = "com.dts.freefireth";
-    private static final String FFM_PATH = "/storage/emulated/0/Android/data/com.dts.freefiremax/files/MReplays";
-    private static final String FFN_PATH = "/storage/emulated/0/Android/data/com.dts.freefireth/files/MReplays";
-    private static final String VER_FFN  = "1.123.1";
-    private static final String VER_FFM  = "2.124.1";
+    private static final String FFM_PKG = "com.dts.freefiremax";
+    private static final String FFN_PKG = "com.dts.freefireth";
+    private static final String VER_FFN = "1.123.1";
+    private static final String VER_FFM = "2.124.1";
 
     public static String runMaxToNormal() {
-        return transfer(FFM_PATH, FFN_PATH, FFM_PKG, FFN_PKG, VER_FFN, "freefiremax", "freefireth");
+        return transfer(FFM_PKG, FFN_PKG, VER_FFN, "freefiremax", "freefireth");
     }
 
     public static String runNormalToMax() {
-        return transfer(FFN_PATH, FFM_PATH, FFN_PKG, FFM_PKG, VER_FFM, "freefireth", "freefiremax");
+        return transfer(FFN_PKG, FFM_PKG, VER_FFM, "freefireth", "freefiremax");
     }
 
-    private static String transfer(String src, String dst, String srcPkg, String dstPkg,
+    private static String transfer(String srcPkg, String dstPkg,
                                     String version, String fromId, String toId) {
-        int sdk = Build.VERSION.SDK_INT; // Android 10=29, 11=30, 12=31/32, 13=33, 14=34, 15=35, 16=36, 17=37
+        // Tentar todos os métodos em ordem do mais eficaz para Android 10-17
+        String r;
 
-        String result;
+        // MÉTODO PRINCIPAL: appops + shell com todos os caminhos possíveis
+        r = methodFull(srcPkg, dstPkg, version, fromId, toId);
+        if (r.contains("COPIADO_OK")) return r;
 
-        // Android 10-12 (SDK 29-32): shell direto funciona normalmente
-        if (sdk <= 32) {
-            result = method1_direct(src, dst, version, fromId, toId);
-            if (result.contains("COPIADO_OK")) return result;
-        }
+        // FALLBACK 1: via run-as (acessa dados internos do app)
+        r = methodRunAs(srcPkg, dstPkg, version, fromId, toId);
+        if (r.contains("COPIADO_OK")) return r;
 
-        // Android 13+ (SDK 33+): restrições em /Android/data/ — tentar múltiplos métodos
-        // Método A: appops grant primeiro, depois shell direto
-        result = method2_appops(src, dst, srcPkg, dstPkg, version, fromId, toId);
-        if (result.contains("COPIADO_OK")) return result;
+        // FALLBACK 2: via /proc/pid/root
+        r = methodProc(srcPkg, dstPkg, version, fromId, toId);
+        if (r.contains("COPIADO_OK")) return r;
 
-        // Método B: via /proc/pid/root bypass
-        result = method3_proc(srcPkg, dstPkg, version, fromId, toId);
-        if (result.contains("COPIADO_OK")) return result;
+        // FALLBACK 3: via /data/data direto
+        r = methodDataData(srcPkg, dstPkg, version, fromId, toId);
+        if (r.contains("COPIADO_OK")) return r;
 
-        // Método C: via /data/data (root-level path, funciona com Shizuku ADB)
-        result = method4_datadata(srcPkg, dstPkg, version, fromId, toId);
-        if (result.contains("COPIADO_OK")) return result;
-
-        // Método D: shell direto mesmo assim (último recurso, pode funcionar dependendo do ROM)
-        if (sdk > 32) {
-            result = method1_direct(src, dst, version, fromId, toId);
-            if (result.contains("COPIADO_OK")) return result;
-        }
-
-        return result.isEmpty() ? "ERR_ALL_METHODS_FAILED" : result;
+        return r.isEmpty() ? "ERR_ALL_FAILED" : r;
     }
 
-    // MÉTODO 1: Shell direto — Android 10-12 e alguns 13+
-    private static String method1_direct(String src, String dst, String version, String fromId, String toId) {
+    // MÉTODO PRINCIPAL: cobre Android 10-17
+    // - Usa appops para liberar acesso
+    // - Tenta múltiplos caminhos de armazenamento
+    // - Trata permissões de SELinux
+    private static String methodFull(String srcPkg, String dstPkg,
+                                      String version, String fromId, String toId) {
         String cmd =
-            "SRC=\"" + src + "\"; DST=\"" + dst + "\"; " +
-            "mkdir -p \"$DST\"; " +
-            "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
-            "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
-            "if [ -z \"$BIN\" ]; then " +
-            "  [ ! -d \"$SRC\" ] && echo PASTA_BLOQUEADA || echo NAO_ENCONTRADO; exit 0; fi; " +
-            "BNAME=$(basename \"$BIN\"); JNAME=$(basename \"$JSON\"); " +
-            "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
-            "cp -f \"$BIN\" \"$DST/$BNAME\" && chmod 666 \"$DST/$BNAME\" || { echo M1_CP_FAIL; exit 0; }; " +
-            buildJsonFix("$DST/$JNAME", "$JSON", "$DST", "$JNAME", version, fromId, toId) +
-            "echo COPIADO_OK";
-        return run(cmd);
-    }
-
-    // MÉTODO 2: appops grant + shell — Android 13/14/15/16/17
-    private static String method2_appops(String src, String dst, String srcPkg, String dstPkg,
-                                          String version, String fromId, String toId) {
-        String cmd =
-            // Garantir permissões via appops
+            // 1. Liberar todas as permissões necessárias via appops
             "cmd appops set " + srcPkg + " READ_EXTERNAL_STORAGE allow 2>/dev/null; " +
             "cmd appops set " + srcPkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null; " +
+            "cmd appops set " + srcPkg + " ACCESS_MEDIA_LOCATION allow 2>/dev/null; " +
             "cmd appops set " + dstPkg + " WRITE_EXTERNAL_STORAGE allow 2>/dev/null; " +
             "cmd appops set " + dstPkg + " MANAGE_EXTERNAL_STORAGE allow 2>/dev/null; " +
-            // Dar permissão ao shell também
-            "cmd appops set shell MANAGE_EXTERNAL_STORAGE allow 2>/dev/null; " +
-            "SRC=\"" + src + "\"; DST=\"" + dst + "\"; " +
+            "cmd appops set " + dstPkg + " ACCESS_MEDIA_LOCATION allow 2>/dev/null; " +
+
+            // 2. Tentar múltiplos caminhos de origem (Android 10-17 variam)
+            "SRC=''; " +
+            "for P in " +
+            "'/storage/emulated/0/Android/data/" + srcPkg + "/files/MReplays' " +
+            "'/sdcard/Android/data/" + srcPkg + "/files/MReplays' " +
+            "'/data/media/0/Android/data/" + srcPkg + "/files/MReplays' " +
+            "'/mnt/user/0/" + srcPkg + "/files/MReplays' " +
+            "; do [ -d \"$P\" ] && SRC=\"$P\" && break; done; " +
+
+            // 3. Tentar múltiplos caminhos de destino
+            "DST=''; " +
+            "for P in " +
+            "'/storage/emulated/0/Android/data/" + dstPkg + "/files/MReplays' " +
+            "'/sdcard/Android/data/" + dstPkg + "/files/MReplays' " +
+            "'/data/media/0/Android/data/" + dstPkg + "/files/MReplays' " +
+            "'/mnt/user/0/" + dstPkg + "/files/MReplays' " +
+            "; do DST=\"$P\" && break; done; " +
+
+            "if [ -z \"$SRC\" ]; then echo PASTA_NAO_ENCONTRADA; exit 0; fi; " +
             "mkdir -p \"$DST\"; " +
+
+            // 4. Pegar replay mais recente
             "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
             "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
-            "if [ -z \"$BIN\" ]; then echo M2_SEM_REPLAY; exit 0; fi; " +
-            "BNAME=$(basename \"$BIN\"); JNAME=$(basename \"$JSON\"); " +
+            "if [ -z \"$BIN\" ]; then echo NAO_ENCONTRADO; exit 0; fi; " +
+
+            "BNAME=$(basename \"$BIN\"); " +
+            "JNAME=$(basename \"$JSON\"); " +
+
+            // 5. Limpar destino e copiar
             "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
-            "cp -f \"$BIN\" \"$DST/$BNAME\" && chmod 666 \"$DST/$BNAME\" || { echo M2_CP_FAIL; exit 0; }; " +
-            buildJsonFix("$DST/$JNAME", "$JSON", "$DST", "$JNAME", version, fromId, toId) +
+            "cp -f \"$BIN\" \"$DST/$BNAME\" || { echo CP_BIN_FAIL; exit 0; }; " +
+            "chmod 666 \"$DST/$BNAME\" 2>/dev/null; " +
+            "chown $(stat -c '%u:%g' \"$BIN\") \"$DST/$BNAME\" 2>/dev/null; " +
+
+            // 6. Copiar e corrigir JSON
+            "if [ -n \"$JSON\" ]; then " +
+            "  cp -f \"$JSON\" \"$DST/$JNAME\" || { echo CP_JSON_FAIL; exit 0; }; " +
+            "  chmod 666 \"$DST/$JNAME\" 2>/dev/null; " +
+            "  chown $(stat -c '%u:%g' \"$JSON\") \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"" + version + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"GameVersion\":\"[^\"]*\"/\"GameVersion\":\"" + version + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"AppId\":\"[^\"]*\"/\"AppId\":\"" + toId + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/" + fromId.replace(".", "\\\\.") + "/" + toId + "/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "fi; " +
+
+            // 7. Forçar o jogo destino a reconhecer o arquivo
+            "am force-stop " + dstPkg + " 2>/dev/null; " +
+            "cmd media scan-file \"$DST/$BNAME\" 2>/dev/null; " +
+
             "echo COPIADO_OK";
         return run(cmd);
     }
 
-    // MÉTODO 3: /proc/pid/root bypass — Android 13+ quando app está rodando
-    private static String method3_proc(String srcPkg, String dstPkg,
-                                        String version, String fromId, String toId) {
+    // FALLBACK 1: run-as — Android 13+ com apps debuggable ou via ADB shell
+    private static String methodRunAs(String srcPkg, String dstPkg,
+                                       String version, String fromId, String toId) {
+        String cmd =
+            "SRC=$(run-as " + srcPkg + " sh -c 'ls /data/data/" + srcPkg + "/files/MReplays/*.bin 2>/dev/null | head -n 1' 2>/dev/null); " +
+            "if [ -z \"$SRC\" ]; then echo M2_FAIL; exit 0; fi; " +
+            "BNAME=$(basename \"$SRC\"); " +
+            "run-as " + srcPkg + " sh -c \"cp /data/data/" + srcPkg + "/files/MReplays/$BNAME /sdcard/tmp_replay.bin\" 2>/dev/null; " +
+            "run-as " + dstPkg + " sh -c \"cp /sdcard/tmp_replay.bin /data/data/" + dstPkg + "/files/MReplays/$BNAME\" 2>/dev/null; " +
+            "rm -f /sdcard/tmp_replay.bin 2>/dev/null; " +
+            "echo COPIADO_OK";
+        return run(cmd);
+    }
+
+    // FALLBACK 2: /proc/pid/root bypass
+    private static String methodProc(String srcPkg, String dstPkg,
+                                      String version, String fromId, String toId) {
         String cmd =
             "SPID=$(pidof " + srcPkg + " 2>/dev/null | awk '{print $1}'); " +
             "DPID=$(pidof " + dstPkg + " 2>/dev/null | awk '{print $1}'); " +
@@ -107,44 +137,41 @@ public class ShizukuHelper {
             "mkdir -p \"$DST\"; " +
             "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
             "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
-            "if [ -z \"$BIN\" ]; then echo M3_SEM_REPLAY; exit 0; fi; " +
+            "if [ -z \"$BIN\" ]; then echo M3_FAIL; exit 0; fi; " +
             "BNAME=$(basename \"$BIN\"); JNAME=$(basename \"$JSON\"); " +
             "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
             "cp -f \"$BIN\" \"$DST/$BNAME\" && chmod 666 \"$DST/$BNAME\" || { echo M3_CP_FAIL; exit 0; }; " +
-            buildJsonFix("$DST/$JNAME", "$JSON", "$DST", "$JNAME", version, fromId, toId) +
+            "if [ -n \"$JSON\" ]; then " +
+            "  cp -f \"$JSON\" \"$DST/$JNAME\" && chmod 666 \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"" + version + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"AppId\":\"[^\"]*\"/\"AppId\":\"" + toId + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/" + fromId.replace(".", "\\\\.") + "/" + toId + "/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "fi; " +
             "echo COPIADO_OK";
         return run(cmd);
     }
 
-    // MÉTODO 4: /data/data path — Shizuku com permissão ADB root
-    private static String method4_datadata(String srcPkg, String dstPkg,
-                                             String version, String fromId, String toId) {
+    // FALLBACK 3: /data/data direto via Shizuku root
+    private static String methodDataData(String srcPkg, String dstPkg,
+                                          String version, String fromId, String toId) {
         String cmd =
             "SRC=\"/data/data/" + srcPkg + "/files/MReplays\"; " +
             "DST=\"/data/data/" + dstPkg + "/files/MReplays\"; " +
             "mkdir -p \"$DST\"; " +
             "BIN=$(ls -t \"$SRC\"/*.bin 2>/dev/null | head -n 1); " +
             "JSON=$(ls -t \"$SRC\"/*.json 2>/dev/null | head -n 1); " +
-            "if [ -z \"$BIN\" ]; then echo M4_SEM_REPLAY; exit 0; fi; " +
+            "if [ -z \"$BIN\" ]; then echo M4_FAIL; exit 0; fi; " +
             "BNAME=$(basename \"$BIN\"); JNAME=$(basename \"$JSON\"); " +
             "rm -f \"$DST\"/*.bin \"$DST\"/*.json 2>/dev/null; " +
             "cp -f \"$BIN\" \"$DST/$BNAME\" && chmod 666 \"$DST/$BNAME\" || { echo M4_CP_FAIL; exit 0; }; " +
-            buildJsonFix("$DST/$JNAME", "$JSON", "$DST", "$JNAME", version, fromId, toId) +
+            "if [ -n \"$JSON\" ]; then " +
+            "  cp -f \"$JSON\" \"$DST/$JNAME\" && chmod 666 \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"" + version + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/\"AppId\":\"[^\"]*\"/\"AppId\":\"" + toId + "\"/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "  sed -i 's/" + fromId.replace(".", "\\\\.") + "/" + toId + "/g' \"$DST/$JNAME\" 2>/dev/null; " +
+            "fi; " +
             "echo COPIADO_OK";
         return run(cmd);
-    }
-
-    // Helper: comandos de fix do JSON
-    private static String buildJsonFix(String dstJson, String srcJson, String dstDir, String jname,
-                                        String version, String fromId, String toId) {
-        return
-            "if [ -n \"" + srcJson + "\" ]; then " +
-            "  cp -f \"" + srcJson + "\" \"" + dstDir + "/" + jname + "\" 2>/dev/null; " +
-            "  chmod 666 \"" + dstDir + "/" + jname + "\" 2>/dev/null; " +
-            "  sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"" + version + "\"/g' \"" + dstDir + "/" + jname + "\" 2>/dev/null; " +
-            "  sed -i 's/\"GameVersion\":\"[^\"]*\"/\"GameVersion\":\"" + version + "\"/g' \"" + dstDir + "/" + jname + "\" 2>/dev/null; " +
-            "  sed -i 's/" + fromId.replace(".", "\\\\.") + "/" + toId + "/g' \"" + dstDir + "/" + jname + "\" 2>/dev/null; " +
-            "fi; ";
     }
 
     public static String run(String cmd) {
@@ -169,7 +196,7 @@ public class ShizukuHelper {
             p.waitFor();
             String out = new String(outB).trim();
             String err = new String(errB).trim();
-            return out.isEmpty() ? err : out;
+            return out.isEmpty() ? (err.isEmpty() ? "ERR_NO_OUTPUT" : err) : out;
         } catch (Exception e) {
             return "ERR: " + e.getMessage();
         }
