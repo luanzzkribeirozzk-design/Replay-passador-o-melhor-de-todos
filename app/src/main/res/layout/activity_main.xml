@@ -2,7 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="#080800">
 
     <com.replayx.app.ui.ParticleView
         android:id="@+id/particleView"
@@ -45,7 +45,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DEV WILL"
+                android:text="Dev Will"
                 android:textColor="#FFFFFF"
                 android:textSize="36sp"
                 android:textStyle="bold" />
@@ -61,7 +61,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="BYPASS  ·  DEV WILL"
-                    android:textColor="#AAFF00"
+                    android:textColor="#7B00AA"
                     android:textSize="10sp" />
 
                 <TextView
@@ -89,7 +89,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text=""
-                    android:textColor="#AAFF00"
+                    android:textColor="#7B00AA"
                     android:textSize="9sp"
                     android:fontFamily="monospace"
                     android:visibility="gone" />
@@ -108,7 +108,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#CCFF00" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#BF00FF" />
 
         <!-- HIDE STREAM -->
         <LinearLayout
@@ -157,7 +157,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1A0025" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#181200" />
 
         <!-- BOTOES -->
         <LinearLayout
@@ -222,7 +222,7 @@
 
         </LinearLayout>
 
-        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1A0025" />
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#181200" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -238,7 +238,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="root@devwill-script:~/ bypass_log"
+                android:text="root@devwill:~/ bypass_log"
                 android:textColor="#00AA22"
                 android:textSize="10sp"
                 android:fontFamily="monospace" />
@@ -283,8 +283,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DEV WILL  ·  DEV WILL"
-                android:textColor="#AAFF00"
+                android:text="Dev Will  ·  Dev Will"
+                android:textColor="#7B00AA"
                 android:textSize="9sp" />
 
         </LinearLayout>
