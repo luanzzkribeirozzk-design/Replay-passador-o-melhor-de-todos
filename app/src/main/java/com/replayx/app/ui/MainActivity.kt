@@ -194,13 +194,7 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                 }
             }
             if (!result.success) {
-                val msg = result.message ?: ""
-                when {
-                    msg.contains("PASTA_NAO_ENCONTRADA") -> log("[ERR] Pasta do jogo nao encontrada. O jogo esta instalado?")
-                    msg.contains("NAO_ENCONTRADO") -> log("[ERR] Nenhum replay encontrado. Salve um replay no jogo primeiro.")
-                    msg.contains("ERR_NO_METHOD") -> log("[ERR] Versao do Shizuku incompativel. Atualize o Shizuku.")
-                    else -> log("[ERR] >> BYPASS_FAIL: $msg")
-                }
+                log("[ERR] >> BYPASS_FAIL")
             }
             log("--------------------------------")
         }
