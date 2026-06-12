@@ -87,7 +87,7 @@ public class ShizukuHelper {
             // Corrigir AppId: freefireth -> freefiremax
             "sed -i 's/com\\.dts\\.freefireth/com.dts.freefiremax/g' \"$DST/$JNAME\"; " +
             // Corrigir Version para FF MAX
-            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"2.123.1\"/g' \"$DST/$JNAME\"; " +
+            "sed -i 's/\"Version\":\"[^\"]*\"/\"Version\":\"1.124.1\"/g' \"$DST/$JNAME\"; " +
             "fi; " +
 
             "echo COPIADO_OK";
