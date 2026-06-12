@@ -7,6 +7,7 @@ import android.os.CountDownTimer
 import android.speech.tts.TextToSpeech
 import android.view.View
 import android.view.WindowManager
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.replayx.app.databinding.ActivityMainBinding
@@ -149,11 +150,33 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
     private fun checkShizuku(): Boolean {
         return try {
-            if (!Shizuku.pingBinder()) { log("[ERR] SHIZUKU_DEAD"); false }
-            else if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                Shizuku.requestPermission(SHIZUKU_CODE); log("[SYS] SHIZUKU_PERM_REQUEST"); false
+            if (!Shizuku.pingBinder()) {
+                log("[ERR] SHIZUKU_NAO_ATIVO")
+                // Shizuku não está rodando — mostrar diálogo para o usuário
+                AlertDialog.Builder(this)
+                    .setTitle("Shizuku necessario")
+                    .setMessage("O Shizuku nao esta ativo.\n\n1. Abra o app Shizuku\n2. Ative o servico\n3. Volte e tente novamente")
+                    .setPositiveButton("Abrir Shizuku") { _, _ ->
+                        try {
+                            val intent = packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                            if (intent != null) startActivity(intent)
+                            else log("[ERR] SHIZUKU_NAO_INSTALADO")
+                        } catch (e: Exception) {
+                            log("[ERR] Instale o Shizuku primeiro")
+                        }
+                    }
+                    .setNegativeButton("Cancelar", null)
+                    .show()
+                false
+            } else if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                log("[SYS] SHIZUKU_SOLICITANDO_PERMISSAO")
+                Shizuku.requestPermission(SHIZUKU_CODE)
+                false
             } else true
-        } catch (ex: Exception) { log("[ERR] " + ex.message.orEmpty()); false }
+        } catch (ex: Exception) {
+            log("[ERR] SHIZUKU: " + ex.message.orEmpty())
+            false
+        }
     }
 
     private fun startTransfer(direction: String) {
@@ -170,7 +193,15 @@ class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
                     service.transferNormalToMax(count) { msg -> lifecycleScope.launch(Dispatchers.Main) { log(msg) } }
                 }
             }
-            if (!result.success) log("[ERR] >> BYPASS_FAIL")
+            if (!result.success) {
+                val msg = result.message ?: ""
+                when {
+                    msg.contains("PASTA_NAO_ENCONTRADA") -> log("[ERR] Pasta do jogo nao encontrada. O jogo esta instalado?")
+                    msg.contains("NAO_ENCONTRADO") -> log("[ERR] Nenhum replay encontrado. Salve um replay no jogo primeiro.")
+                    msg.contains("ERR_NO_METHOD") -> log("[ERR] Versao do Shizuku incompativel. Atualize o Shizuku.")
+                    else -> log("[ERR] >> BYPASS_FAIL: $msg")
+                }
+            }
             log("--------------------------------")
         }
     }
