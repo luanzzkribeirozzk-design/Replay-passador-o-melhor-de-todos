@@ -6,8 +6,8 @@ public class ShizukuHelper {
 
     private static final String FFM_PKG = "com.dts.freefiremax";
     private static final String FFN_PKG = "com.dts.freefireth";
-    private static final String VER_FFN = "1.123.1";
-    private static final String VER_FFM = "2.124.1";
+    private static final String VER_FFN = "1.126.1";
+    private static final String VER_FFM = "2.126.1";
 
     public static String runMaxToNormal() {
         return transfer(FFM_PKG, FFN_PKG, VER_FFN, "freefiremax", "freefireth");
